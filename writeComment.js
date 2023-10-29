@@ -7,7 +7,7 @@ puppeteer.use(StealthPlugin());
 
 //123
 module.exports = async function(url){
-  
+
   const browser = await puppeteer.launch({
     headless: false,
     args: [
@@ -20,14 +20,14 @@ module.exports = async function(url){
 
   for (const acc of cookies){
     const page = await browser.newPage();
-    
+
     await page.setCookie(...acc.cookies);
     await page.goto(url, { waitUntil: 'load' });
-    
+
     await page.evaluate(async () => {
       window.scrollBy(0, 400);
     });
-    
+
     await page.waitForTimeout(100);
 
     const frames = await page.frames()
@@ -39,13 +39,13 @@ module.exports = async function(url){
         await comment.click();
 
         await comment.type('hello');
-        
+
         await page.keyboard.press('Enter');
       }
     } catch (err) {
       console.log('error writing comment:', err);
     }
-    
+
     await page.waitForTimeout(3000);
     break;
   }
