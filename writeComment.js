@@ -18,34 +18,36 @@ module.exports = async function(url){
     ],
   });
 
-  const end = cookies.length-1;
-  const curr = 0;
-  
-  const page = await browser.newPage();
-  await page.goto(url, { waitUntil: 'load' });
+  for (const acc of cookies){
+    const page = await browser.newPage();
+    
+    await page.setCookie(...acc.cookies);
+    await page.goto(url, { waitUntil: 'load' });
+    
+    await page.evaluate(async () => {
+      window.scrollBy(0, 400);
+    });
+    
+    await page.waitForTimeout(100);
 
-  await page.evaluate(async () => {
-    window.scrollBy(0, 400);
-  });
-  
-  await page.waitForTimeout(200);
-
-  const frames = await page.frames()
-  const chatframe = frames.find(frame => frame.name() === 'chatframe');
-  
-  for (const cock of cookies){
-    await page.setCookie(...cock.cookies);
-    console.log(curr);
+    const frames = await page.frames()
+    const chatframe = frames.find(frame => frame.name() === 'chatframe');
     try {
       const comment = await chatframe.$('#input.style-scope.yt-live-chat-message-input-renderer');
+
       if (comment){
         await comment.click();
-        await comment.type('hello'+(curr++));
+
+        await comment.type('hello');
+        
         await page.keyboard.press('Enter');
       }
     } catch (err) {
       console.log('error writing comment:', err);
     }
-  };
-  //await browser.close();
+    
+    await page.waitForTimeout(3000);
+    break;
+  }
+  await browser.close();
 }
