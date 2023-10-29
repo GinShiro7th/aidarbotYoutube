@@ -10,5 +10,5 @@ const url = 'https://www.youtube.com/watch?v=pufV7jS_EzM';
 const channel = 'https://www.youtube.com/@sulive9561';
 
 // setTimeout(async () => await subscribe(channel));
-setTimeout(async () => await writeComment(url), 3000);
+setTimeout(async () => await writeComment(url), 1000);
 // setTimeout(async () => await loginAccount(login, password), 3000);
