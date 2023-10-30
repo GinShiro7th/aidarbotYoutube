@@ -47,7 +47,6 @@ module.exports = async function(url){
     }
 
     await page.waitForTimeout(3000);
-    break;
   }
   await browser.close();
 }
