@@ -7,8 +7,8 @@ const password = "CtyhxCyoi578";
 
 const url = 'https://www.youtube.com/watch?v=60-yvrNbom4';
 
-const channel = 'https://www.youtube.com/@sulive9561';
+const channel = 'https://www.youtube.com/@1337LikeR';
 
-// setTimeout(async () => await subscribe(channel));
+// setTimeout(async () => await subscribe(channel), 1000);
 setTimeout(async () => await writeComment(url), 1000);
 // setTimeout(async () => await loginAccount(login, password), 3000);

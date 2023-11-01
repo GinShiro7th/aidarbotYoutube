@@ -26,7 +26,6 @@ module.exports = async function(login, password){
 
 
   const page = await browser.newPage();
-
   await page.setUserAgent(ua);
   await page.goto(loginUrl, { waitUntil: "networkidle2" });
 

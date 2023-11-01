@@ -6,87 +6,57 @@ const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 puppeteer.use(StealthPlugin());
 
 module.exports = async function (url) {
-  // for (const acc of cookies){
-  //   const browser = await puppeteer.launch({
-  //   headless: false,
-  //   args: [
-  //       "--no-sandbox",
-  //       "--disable-gpu",
-  //       "--enable-webgl",
-  //       "--window-size=1900,1200",
-  //     ],
-  //   });
-  //   const page = await browser.newPage();
+  const browser = await puppeteer.launch({
+    headless: false,
+    args: [
+      "--no-sandbox",
+      "--disable-gpu",
+      "--enable-webgl",
+      "--window-size=1900,1200",
+    ],
+  });
 
-  //   await page.setCookie(...acc.cookies);
-  //   await page.goto(url);
+  for (const acc of cookies) {
+    const page = await browser.newPage();
 
-  //   await page.waitForSelector('#chatframe');
-  //   const frames = await page.frames()
-  //   const chatframe = frames.find(frame => frame.name() === 'chatframe');
-  //   try {
-  //     const comment = await chatframe.$('#input.style-scope.yt-live-chat-message-input-renderer');
+    await page.setCookie(...acc.cookies);
 
-  //     if (comment){
-  //       await comment.click();
+    await page.setRequestInterception(true);
 
-  //       await comment.type('hello');
-
-  //       await page.keyboard.press('Enter');
-  //     }
-  //   } catch (err) {
-  //     console.log('error writing comment:', err);
-  //   }
-  //   await browser.close();
-  //   //await page.close();
-  // }
-
-  const end = cookies.length;
-  let curr = -1;
-
-  const iter = setInterval(async () => {
-    if (++curr < end) {
-      console.log(curr);
-      const cock = cookies[curr].cookies;
-
-      const browser = await puppeteer.launch({
-        headless: false,
-        args: [
-          "--no-sandbox",
-          "--disable-gpu",
-          "--enable-webgl",
-          "--window-size=1900,1200",
-        ],
-      });
-      const page = await browser.newPage();
-      await page.setCookie(...cock);
-
-      await page.goto(url);
-
-      await page.waitForSelector("#chatframe");
-      const frames = await page.frames();
-
-      const chatframe = frames.find((frame) => frame.name() === "chatframe");
-      try {
-        const comment = await chatframe.$(
-          "#input.style-scope.yt-live-chat-message-input-renderer"
-        );
-
-        if (comment) {
-          await comment.click();
-
-          await comment.type("hello");
-
-          await page.keyboard.press("Enter");
-        }
-      } catch (err) {
-        console.log("error writing comment:", err);
+    page.on("request", (req) => {
+      if (
+        req.resourceType() == "stylesheet" ||
+        req.resourceType() == "font" ||
+        req.resourceType() == 'image'
+      ) {
+        req.abort();
+      } else {
+        req.continue();
       }
-      await browser.close();
-    } else {
-      console.log("done");
-      clearInterval(iter);
+    });
+
+    await page.goto(url, {timeout: 60000});
+
+    await page.waitForSelector("#chatframe");
+    const frames = await page.frames();
+    const chatframe = frames.find((frame) => frame.name() === "chatframe");
+    try {
+      const comment = await chatframe.$(
+        "#input.style-scope.yt-live-chat-message-input-renderer"
+      );
+
+      if (comment) {
+        await comment.click();
+
+        await comment.type("hello");
+
+        await page.keyboard.press("Enter");
+      }
+    } catch (err) {
+      console.log("error writing comment:", err);
     }
-  }, 2000);
-  // setTimeout(async () => await browser.close(), 5 * 60 * 1000);
+    await page.close();
+  }
+  await browser.close();
+
 };
