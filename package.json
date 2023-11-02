@@ -26,6 +26,5 @@
     "request": "^2.88.2",
     "youtube-api": "^3.0.1"
   },
-  "devDependencies": {},
   "description": ""
 }

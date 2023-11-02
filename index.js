@@ -1,6 +1,6 @@
 const loginAccount = require("./loginAccount");
 const subscribe = require("./subscribe");
-const writeComment = require("./writeComment");
+const writeComment = require("./writeComment/main");
 
 const login = "olgabatutina849@gmail.com";
 const password = "CtyhxCyoi578";
