@@ -2,6 +2,11 @@ const { Worker, isMainThread } = require("worker_threads");
 
 const cookies = require("../cookies.json");
 
+const puppeteer = require("puppeteer-extra");
+const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+
+puppeteer.use(StealthPlugin());
+
 module.exports = async function (url) {
   if (isMainThread) {
     // Этот код выполняется в главном потоке
@@ -12,7 +17,7 @@ module.exports = async function (url) {
     // Создаем один экземпляр браузера и получаем его WebSocket endpoint
     (async () => {
       const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         args: [
           "--no-sandbox",
           "--disable-gpu",
