@@ -6,35 +6,24 @@ const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 puppeteer.use(StealthPlugin());
 
 (async () => {
-  const browser = await puppeteer.connect({ browserWSEndpoint: workerData.browserWSEndpoint });
-
+  const browser = await puppeteer.connect({ browserWSEndpoint: workerData.endPoint});
   const acc = workerData.cookies;
 
   const page = await browser.newPage();
 
   await page.setCookie(...acc.cookies);
-
-  await page.setRequestInterception(true);
-
-  page.on("request", (req) => {
-    if (
-      req.resourceType() == "stylesheet" ||
-      req.resourceType() == "font" ||
-      req.resourceType() == 'image'
-    ) {
-      req.abort();
-    } else {
-      req.continue();
-    }
-  });
-
-  await page.goto(workerData.url, {timeout: 60000});
-
-  await page.waitForSelector("#chatframe");
-  const frames = await page.frames();
-  const chatframe = frames.find((frame) => frame.name() === "chatframe");
-
+  
   try {
+    await page.goto(workerData.url, { timeout: 120 * 1000 });
+    
+    await page.waitForSelector("#chatframe", {timeout: 60 * 1000});
+    const frames = await page.frames();
+    const chatframe = frames.find((frame) => frame.name() === "chatframe");
+    
+    await chatframe.waitForSelector("#input.style-scope.yt-live-chat-message-input-renderer", {timeout: 60 * 1000});
+    
+    await page.waitForTimeout(500);
+
     const comment = await chatframe.$(
       "#input.style-scope.yt-live-chat-message-input-renderer"
     );
@@ -44,10 +33,22 @@ puppeteer.use(StealthPlugin());
       await comment.type("hello");
       await page.keyboard.press("Enter");
     }
+    
+    await page.waitForTimeout(500);
+    await browser.close();
+    
+    parentPort.postMessage({ status: 'done' });
   } catch (err) {
-    console.log("error writing comment:", err);
+
+    await page.waitForTimeout(500);
+    await browser.close();
+    
+    parentPort.postMessage(
+      { 
+        status: 'error',
+        errMsg: err.message
+      }
+    );
   }
 
-  await browser.close();
-  parentPort.postMessage({ status: 'done' });
 })();

@@ -11,11 +11,12 @@ module.exports = async function (url) {
   if (isMainThread) {
     // Этот код выполняется в главном потоке
 
-    const numWorkers = cookies.length;
+    const pagesPerBrowser = 1;
+    const numBrowsers = cookies.length / pagesPerBrowser; // Здесь указываете, сколько браузеров нужно создать
     const workers = [];
 
-    // Создаем один экземпляр браузера и получаем его WebSocket endpoint
-    (async () => {
+    for (let i = 0; i < numBrowsers; i++) {
+      // Создаем отдельный экземпляр браузера
       const browser = await puppeteer.launch({
         headless: true,
         args: [
@@ -23,28 +24,38 @@ module.exports = async function (url) {
           "--disable-gpu",
           "--enable-webgl",
           "--window-size=1900,1200",
+          '--disable-dev-shm-usage',
         ],
       });
-      const browserWSEndpoint = browser.wsEndpoint();
+      const endPoint = await browser.wsEndpoint();
 
-      // Запускаем рабочие потоки с общим браузером
-      for (let i = 0; i < numWorkers; i++) {
-        const worker = new Worker("./writeComment/worker.js", {
-          workerData: {
-            cookies: cookies[i],
-            url: url,
-            browserWSEndpoint: browserWSEndpoint,
-          },
-        });
+      // Создаем отдельные рабочие потоки для каждой страницы в браузере
+      for (let j = i * pagesPerBrowser; j < (i + 1) * pagesPerBrowser; j++) {
+        if (j < cookies.length) {
+          const worker = new Worker("./writeComment/worker.js", {
+            workerData: {
+              cookies: cookies[j],
+              url,
+              endPoint
+            },
+          });
 
-        worker.on("message", (message) => {
-          if (message.status === "done") {
-            console.log(`Рабочий поток ${i} завершил работу.`);
-          }
-        });
+          worker.on("message", (message) => {
+            if (message.status === "done") {
+              console.log(
+                `Рабочий поток ${j} завершил работу в браузере ${i}.`
+              );
+            } else if (message.status === 'error'){
+              console.log(`ошибка в потоке ${j} в браузере ${i} - ${message.errMsg}`);
+            }
+          });
 
-        workers.push(worker);
+          workers.push(worker);
+        }
       }
-    })();
+    }
+    return;
+  } else {
+    // Этот код не будет выполняться, так как worker.js используется в рабочих потоках
   }
 };

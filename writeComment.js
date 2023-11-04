@@ -13,27 +13,16 @@ module.exports = async function (url) {
       "--disable-gpu",
       "--enable-webgl",
       "--window-size=1900,1200",
+      '--disable-dev-shm-usage',
     ],
   });
 
   for (const acc of cookies) {
     const page = await browser.newPage();
 
+    console.log(acc.login, acc.password);
+
     await page.setCookie(...acc.cookies);
-
-    await page.setRequestInterception(true);
-
-    page.on("request", (req) => {
-      if (
-        req.resourceType() == "stylesheet" ||
-        req.resourceType() == "font" ||
-        req.resourceType() == 'image'
-      ) {
-        req.abort();
-      } else {
-        req.continue();
-      }
-    });
 
     await page.goto(url, {timeout: 60000});
 
@@ -53,7 +42,7 @@ module.exports = async function (url) {
         await page.keyboard.press("Enter");
       }
     } catch (err) {
-      console.log("error writing comment:", err);
+      console.log("error writing comment:", err.message);
     }
     await page.close();
   }
