@@ -11,7 +11,7 @@ module.exports = async function (url) {
   if (isMainThread) {
     // Этот код выполняется в главном потоке
 
-    const pagesPerBrowser = 1;
+    const pagesPerBrowser = 4;
     const numBrowsers = cookies.length / pagesPerBrowser; // Здесь указываете, сколько браузеров нужно создать
     const workers = [];
 
