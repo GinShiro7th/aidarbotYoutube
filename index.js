@@ -31,7 +31,7 @@ const url = 'https://www.youtube.com/watch?v=60-yvrNbom4';
 const channel = 'https://www.youtube.com/@1337LikeR';
 
 (async () => {
-  for (acc of accounts){
+  for (let acc of accounts){
     await loginAccount(acc.login, acc.password);
   }
 })()
