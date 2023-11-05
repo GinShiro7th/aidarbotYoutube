@@ -10,7 +10,7 @@ puppeteer.use(StealthPlugin());
 module.exports = async function(login, password){
 
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: true,
     args: [
       "--no-sandbox",
       "--disable-gpu",
