@@ -8,9 +8,9 @@ puppeteer.use(StealthPlugin());
 (async () => {
   const browser = await puppeteer.connect({ browserWSEndpoint: workerData.endPoint});
   const acc = workerData.cookies;
-
-  const page = await browser.newPage();
-
+  
+  const context = await browser.createIncognitoBrowserContext();
+  const page = await context.newPage();
   await page.setCookie(...acc.cookies);
   
   try {
@@ -22,7 +22,7 @@ puppeteer.use(StealthPlugin());
     
     await chatframe.waitForSelector("#input.style-scope.yt-live-chat-message-input-renderer", {timeout: 60 * 1000});
     
-    await page.waitForTimeout(500);
+    // await page.waitForTimeout(500);
 
     const comment = await chatframe.$(
       "#input.style-scope.yt-live-chat-message-input-renderer"
@@ -34,8 +34,9 @@ puppeteer.use(StealthPlugin());
       await page.keyboard.press("Enter");
     }
     
-    await page.waitForTimeout(500);
-    await browser.close();
+    // await page.waitForTimeout(500);
+    // await browser.close();
+
     
     parentPort.postMessage({ status: 'done' });
   } catch (err) {
