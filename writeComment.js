@@ -5,6 +5,28 @@ const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
 puppeteer.use(StealthPlugin());
 
+function generateRandomNumberWithinRange(min, max, step) {
+  if (min > max || step <= 0) {
+    return "Неверные параметры";
+  }
+
+  // Вычисляем количество возможных десятков внутри заданного диапазона
+  const numPossibleRanges = Math.floor((max - min + 1) / step);
+
+  if (numPossibleRanges <= 0) {
+    return "Невозможно сгенерировать числа с такими параметрами";
+  }
+  const randomRangeIndex = Math.floor(Math.random() * numPossibleRanges);
+
+  const selectedRangeMin = min + randomRangeIndex * step;
+  const selectedRangeMax = selectedRangeMin + step - 1;
+
+  // Генерируем случайное число внутри выбранного диапазона
+  const randomNumber = Math.floor(Math.random() * (selectedRangeMax - selectedRangeMin + 1)) + selectedRangeMin;
+  return randomNumber;
+}
+
+
 module.exports = async function (url) {
   const browser = await puppeteer.launch({
     headless: false,
@@ -36,13 +58,14 @@ module.exports = async function (url) {
 
       if (comment) {
         await comment.click();
-
-        await comment.type("hello");
+        const number = generateRandomNumberWithinRange(10, 100, 2);
+        await comment.type(`${number}`);
 
         await page.keyboard.press("Enter");
+        console.log('entered');
       }
     } catch (err) {
-      console.log("error writing comment:", err.message);
+      console.log("error writing comment:", err);
     }
     await page.close();
   }
