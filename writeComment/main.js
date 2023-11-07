@@ -9,7 +9,7 @@ module.exports = async function (url) {
   if (isMainThread) {
     // Этот код выполняется в главном потоке
 
-    const numBrowsers = 1; // Здесь указываете, сколько браузеров нужно создать
+    const numBrowsers = cookies.length / 5; // Здесь указываете, сколько браузеров нужно создать
     const workers = [];
 
     for (let i = 0; i < numBrowsers; i++) {

@@ -10,7 +10,7 @@ puppeteer.use(StealthPlugin());
 
   // Создаем отдельный экземпляр браузера
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: cookies.length < 10,
     args: [
       "--no-sandbox",
       "--disable-gpu",
