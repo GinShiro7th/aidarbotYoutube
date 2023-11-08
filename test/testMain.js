@@ -2,10 +2,12 @@ const { Cluster } = require('puppeteer-cluster');
 const cookies = require('../cookies.json');
 
 (async () => {
-  // Создаем новый экземпляр кластера
+  const numAccounts = cookies.length;
+  const maxConcurrency = 10; // Максимальное количество аккаунтов, обрабатываемых одновременно
+
   const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_CONTEXT,
-    maxConcurrency: 2, // Максимальное количество одновременно открытых браузеров
+    maxConcurrency: maxConcurrency,
     puppeteerOptions: {
       headless: false,
       args: [
@@ -15,40 +17,38 @@ const cookies = require('../cookies.json');
         "--window-size=1900,1200",
         '--disable-dev-shm-usage',
       ],
-    }
+    },
   });
 
-  // Определяем задачу для обработки страницы
   await cluster.task(async ({ page, data }) => {
-    await page.setCookie(...cookies[data.i].cookies);
-    try{
-      await page.goto(data.url, { timeout: 120 * 1000 });
-      console.log(123);
-      await page.waitForSelector("#chatframe", { timeout: 60 * 1000 });
-      const frames = await page.frames();
-      const chatframe = frames.find((frame) => frame.name() === "chatframe");
-      await chatframe.waitForSelector("#input.style-scope.yt-live-chat-message-input-renderer", { timeout: 60 * 1000 });
+    const acc = data.account;
+    await page.setCookie(...acc.cookies);
+    await page.goto(data.url, { timeout: 60000 });
 
-      const comment = await chatframe.$("#input.style-scope.yt-live-chat-message-input-renderer");
+    const frames = await page.frames();
+    const chatframe = frames.find((frame) => frame.name() === "chatframe");
 
-      if (comment) {
-        await comment.click();
-        await comment.type("hello");
-        await page.keyboard.press("Enter");
+    if (chatframe) {
+      try {
+        const comment = await chatframe.$("#input.style-scope.yt-live-chat-message-input-renderer");
+        if (comment) {
+          const number = generateRandomNumberWithinRange(10, 100, 2);
+          await comment.click();
+          await comment.type(`${number}`);
+          await page.keyboard.press("Enter");
+          console.log(`Аккаунт ${acc.login} отправил комментарий.`);
+        }
+      } catch (err) {
+        console.error(`Ошибка аккаунта ${acc.login}:`, err);
       }
-    } catch (err) {
-      console.log('page err -', err.message);
     }
-    await page.close();
   });
 
-  // Добавляем задачи для обработки
-  for (let i = 0; i < 3; i++)
-    cluster.queue({ url: 'https://www.youtube.com/watch?v=60-yvrNbom4', i });
+  for (let i = 0; i < numAccounts; i++) {
+    const taskData = { account: cookies[i], url: 'https://www.youtube.com/watch?v=60-yvrNbom4' };
+    cluster.queue(taskData);
+  }
 
-  // Добавьте другие задачи...
-
-  // Ожидаем завершения всех задач
   await cluster.idle();
   await cluster.close();
 })();
