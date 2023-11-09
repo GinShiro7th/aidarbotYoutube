@@ -1,9 +1,5 @@
 const { Worker, isMainThread } = require("worker_threads");
 const cookies = require("../cookies.json");
-const puppeteer = require("puppeteer-extra");
-const StealthPlugin = require("puppeteer-extra-plugin-stealth");
-
-puppeteer.use(StealthPlugin());
 
 module.exports = async function (url) {
   if (isMainThread) {
