@@ -17,8 +17,9 @@ const channel = 'https://www.youtube.com/@1337LikeR';
   }
 })()
 */
+loginAccount(accounts[2].login, accounts[2].password);
 
 // setTimeout(async () => await subscribe(channel), 1000);
-setTimeout(async () => await writeComment(url), 1000);
+//setTimeout(async () => await writeComment(url), 1000);
 // setTimeout(async () => await test(url), 1000);
 // setTimeout(async () => await loginAccount(login, password), 3000);

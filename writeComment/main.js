@@ -63,11 +63,13 @@ module.exports = async function (url) {
   
     await browser.close();  
 
+    cookies.shift();
+
     const numPages = 30; // Здесь указываете, сколько браузеров нужно создать
     const numBrowsers = cookies.length / numBrowsers;
     const workers = [];
 
-    for (let i = 1; i < numBrowsers; i++) {
+    for (let i = 0; i < numBrowsers; i++) {
       const worker = new Worker("./writeComment/worker.js", {
         workerData: {
           cookies: cookies.slice(i * numPages, (i + 1) * numPages),

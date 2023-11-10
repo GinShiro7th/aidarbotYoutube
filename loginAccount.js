@@ -44,11 +44,14 @@ module.exports = async function(login, password){
     }
 
     await page.waitForTimeout(1000);
+    
     await page.type('input[type="password"]', password);
     await page.keyboard.press('Enter');
     
     await page.waitForNavigation('https://www.youtube.com/');
     const userCookies = await page.cookies();
+    await page.click('#avatar-btn');
+    const nickname = await page.$eval('#channel-container', elem => elem.textContent);
     await page.waitForTimeout(1000);
 
     await browser.close();
@@ -58,6 +61,7 @@ module.exports = async function(login, password){
       index === -1 ?
       cookies.push({
         login: login,
+        name: nickname,
         password: password,
         cookies: userCookies
       }) : cookies[index].cookies = userCookies;

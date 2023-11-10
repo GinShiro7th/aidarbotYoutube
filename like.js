@@ -4,8 +4,6 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
 puppeteer.use(StealthPlugin());
-const fs = require('fs');
-
 
 module.exports = async function(url){
   
@@ -23,10 +21,10 @@ module.exports = async function(url){
     const page = await browser.newPage();
     await page.setCookie(...acc.cookies);
     
-    await page.goto(url, { waitUntil: 'load' });
+    await page.goto(url, {timeout : 60000});
     
     try {
-      const subButton = await page.$('.yt-spec-touch-feedback-shape.yt-spec-touch-feedback-shape--touch-response-inverse');
+      const likeButton = await page.$('.yt-spec-button-shape-next yt-spec-button-shape-next--tonal yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m yt-spec-button-shape-next--icon-leading yt-spec-button-shape-next--segmented-start'.replace(' ', '.'));
       console.log(subButton);
       await subButton.click();
 
