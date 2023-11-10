@@ -1,12 +1,12 @@
 const { Cluster } = require('puppeteer-cluster');
 const cookies = require('../cookies.json');
+const puppeteer = require('puppeteer');
 
 (async () => {
-  const cluster = await Cluster.launch({
-    concurrency: Cluster.CONCURRENCY_PAGE, // Один браузер с несколькими страницами
-    maxConcurrency: 6, // Максимальное количество одновременно открытых страниц
-    puppeteerOptions: {
-      headless: false,
+
+  const browser = await puppeteer.launch(
+    {
+      headless: true,
       args: [
         "--no-sandbox",
         "--disable-gpu",
@@ -14,6 +14,17 @@ const cookies = require('../cookies.json');
         "--window-size=1900,1200",
         '--disable-dev-shm-usage',
       ],
+    },
+  );
+
+  const context = await browser.createIncognitoBrowserContext();
+
+  const cluster = await Cluster.launch({
+    concurrency: Cluster.CONCURRENCY_PAGE, // Один браузер с несколькими страницами
+    maxConcurrency: 3, // Максимальное количество одновременно открытых страниц
+    puppeteerOptions: {
+      headless: false,
+      browserWsEndpoint: browser.wsEndpoint()
     },
   });
 
@@ -51,7 +62,7 @@ const cookies = require('../cookies.json');
   }
 
   // Добавление задач в кластер
-  tasks.forEach((task) => cluster.queue(task));
+  tasks.forEach((task, i) => setTimeout(() => cluster.queue(task), 2000 * i));
 
   // Дождитесь завершения всех задач
   await cluster.idle();

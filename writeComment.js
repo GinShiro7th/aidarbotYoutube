@@ -17,30 +17,69 @@ module.exports = async function (url) {
     ],
   });
 
-  const context = await browser.createIncognitoBrowserContext();
+  let req;
+  let head;
 
-  const processPage = async (acc) => {
-    const page = await context.newPage();
+  const page = await browser.newPage();
 
-    console.log(acc.login, acc.password);
+  console.log(cookies[0].login, cookies[0].password);
 
-    await page.setCookie(...acc.cookies);
+  await page.setCookie(...cookies[0].cookies);
 
-    await page.goto(url, { waitUntil: "networkidle0", timeout: 60000 });
+  await page.setRequestInterception(true);
+  page.on("request", (request) => {
+    if (
+      request
+        .url()
+        .includes("https://www.youtube.com/youtubei/v1/live_chat/send_message")
+    ) {
+      req = request.postData();
+      head = request.headers();
+    }
+    request.continue();
+  });
 
-    await page.waitForSelector("#chatframe");
-    const frames = await page.frames();
-    const chatframe = frames.find((frame) => frame.name() === "chatframe");
+  await page.goto(url, { timeout: 60000 });
+
+  await page.waitForSelector("#chatframe");
+  const frames = await page.frames();
+  const chatframe = frames.find((frame) => frame.name() === "chatframe");
+  try {
+    const comment = await chatframe.$(
+      "#input.style-scope.yt-live-chat-message-input-renderer"
+    );
+
+    if (comment) {
+      await comment.click();
+      await comment.type(`hello`);
+
+      await page.keyboard.press("Enter");
+      console.log("entered");
+    }
+  } catch (err) {
+    console.log("error writing comment:", err);
+  }
+  await page.close();
+
+
+
+  for (let i=1; i<cookies.length; i++) {
+    const page = await browser.newPage();
+
+    console.log(cookies[i].login, cookies[i].password);
+
+    await page.setCookie(...cookies[i].cookies);
+
+    await page.goto(JSON.parse(req).context.client.originalUrl, { timeout: 60000 });
 
     try {
-      const comment = await chatframe.$(
+      const comment = await page.$(
         "#input.style-scope.yt-live-chat-message-input-renderer"
       );
 
       if (comment) {
         await comment.click();
-        const number = generateRandomNumberWithinRange(10, 100, 2);
-        await comment.type(`${number}`);
+        await comment.type(`hello`);
 
         await page.keyboard.press("Enter");
         console.log("entered");
@@ -48,21 +87,8 @@ module.exports = async function (url) {
     } catch (err) {
       console.log("error writing comment:", err);
     }
-
     await page.close();
-  };
+  }
 
-  let i = 0;
-  let end = cookies.length / 10;
-  const iter = setInterval(async () => {
-    if (i < end) {
-      await Promise.all(cookies.slice(i * 10, (i + 1) * 10).map(processPage));
-      i++;
-      if (i == end)
-        await browser.close();
-    } else {
-      clearInterval(iter);
-    }
-  }, 10 * 1000);
-
+  await browser.close();
 };
