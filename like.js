@@ -21,12 +21,12 @@ module.exports = async function(url){
     const page = await browser.newPage();
     await page.setCookie(...acc.cookies);
     
-    await page.goto(url, {timeout : 60000});
+    await page.goto(url, {timeout : 120000});
     
     try {
-      const likeButton = await page.$('.yt-spec-button-shape-next yt-spec-button-shape-next--tonal yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m yt-spec-button-shape-next--icon-leading yt-spec-button-shape-next--segmented-start'.replace(' ', '.'));
-      console.log(subButton);
-      await subButton.click();
+      const likeButton = await page.$('#segmented-like-button > ytd-toggle-button-renderer > yt-button-shape > button');
+      console.log(likeButton);
+      await likeButton.click();
 
     } catch (err) {
       console.log('no sub button(');

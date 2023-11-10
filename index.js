@@ -2,7 +2,8 @@ const loginAccount = require("./loginAccount");
 const subscribe = require("./subscribe");
 //const writeComment = require("./writeComment/main");
 //const writeComment = require('./writeComment');
-const writeComment = require('./test/testMain');
+
+const like = require('./like');
 
 const accounts = require('./accounts.json');
 
@@ -17,7 +18,9 @@ const channel = 'https://www.youtube.com/@1337LikeR';
   }
 })()
 */
-loginAccount(accounts[2].login, accounts[2].password);
+//loginAccount(accounts[2].login, accounts[2].password);
+
+like(url);
 
 // setTimeout(async () => await subscribe(channel), 1000);
 //setTimeout(async () => await writeComment(url), 1000);
