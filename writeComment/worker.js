@@ -10,7 +10,7 @@ puppeteer.use(StealthPlugin());
 
   // Создаем отдельный экземпляр браузера
   const browser = await puppeteer.launch({
-    headless: cookies.length < 10,
+    headless: false,
     args: [
       "--no-sandbox",
       "--disable-gpu",
@@ -19,31 +19,33 @@ puppeteer.use(StealthPlugin());
       '--disable-dev-shm-usage',
     ],
   });
-  const context = await browser.createIncognitoBrowserContext();
-
   try {
     for (const cookie of cookies) {
-      const page = await context.newPage();
+      const page = await browser.newPage();
+
+      console.log(cookie.login, cookie.password);
+
       await page.setCookie(...cookie.cookies);
 
-      await page.goto(url, { timeout: 120 * 1000 });
-      await page.waitForSelector("#chatframe", { timeout: 60 * 1000 });
-      const frames = await page.frames();
-      const chatframe = frames.find((frame) => frame.name() === "chatframe");
-      await chatframe.waitForSelector("#input.style-scope.yt-live-chat-message-input-renderer", { timeout: 60 * 1000 });
+      await page.goto(url, { timeout: 60000 });
 
-      const comment = await chatframe.$("#input.style-scope.yt-live-chat-message-input-renderer");
+      try {
+        const comment = await page.$(
+          "#input.style-scope.yt-live-chat-message-input-renderer"
+        );
 
-      if (comment) {
-        await comment.click();
-        await comment.type("hello");
-        await page.keyboard.press("Enter");
+        if (comment) {
+          await comment.click();
+          await comment.type(`hello`);
+
+          await page.keyboard.press("Enter");
+          console.log("entered");
+        }
+      } catch (err) {
+        console.log("error writing comment:", err);
       }
-
-      await page.waitForTimeout(500);
-      await context.close();
+      await page.close();
     }
-
     parentPort.postMessage({ status: 'done' });
   } catch (err) {
     await browser.close();

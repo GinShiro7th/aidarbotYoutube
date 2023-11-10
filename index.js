@@ -1,7 +1,8 @@
 const loginAccount = require("./loginAccount");
 const subscribe = require("./subscribe");
 //const writeComment = require("./writeComment/main");
-const writeComment = require('./writeComment');
+//const writeComment = require('./writeComment');
+const writeComment = require('./test/testMain');
 
 const accounts = require('./accounts.json');
 
