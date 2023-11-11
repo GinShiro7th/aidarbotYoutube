@@ -4,9 +4,12 @@ const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
 puppeteer.use(StealthPlugin());
 
+const botState = require('../botState.json');
+
 (async () => {
   const cookies = workerData.cookies;
   const url = workerData.url;
+  const text = workerData.text;
 
   // Создаем отдельный экземпляр браузера
   const browser = await puppeteer.launch({
@@ -21,6 +24,7 @@ puppeteer.use(StealthPlugin());
   });
   try {
     for (const cookie of cookies) {
+      if (botState.stoped) break;
       const page = await browser.newPage();
 
       console.log(cookie.login, cookie.password);
@@ -36,16 +40,17 @@ puppeteer.use(StealthPlugin());
 
         if (comment) {
           await comment.click();
-          await comment.type(`hello`);
+          await comment.type(text);
 
           await page.keyboard.press("Enter");
           console.log("entered");
         }
       } catch (err) {
-        console.log("error writing comment:", err);
+        console.log("error writing comment:", err.message);
       }
       await page.close();
     }
+    await browser.close();
     parentPort.postMessage({ status: 'done' });
   } catch (err) {
     await browser.close();

@@ -4,7 +4,6 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
 puppeteer.use(StealthPlugin());
-const fs = require('fs');
 
 
 module.exports = async function(url){
@@ -22,7 +21,7 @@ module.exports = async function(url){
   for (const acc of cookies){
     const page = await browser.newPage();
     await page.setCookie(...acc.cookies);
-    
+    console.log(acc.login, acc.password);
     await page.goto(url, { waitUntil: 'load' });
     
     try {
@@ -33,7 +32,7 @@ module.exports = async function(url){
     } catch (err) {
       console.log('no sub button(');
     }
-    break;
+    await page.close();
   }
   await browser.close();
 }

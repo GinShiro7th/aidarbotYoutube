@@ -1,5 +1,5 @@
 const fs = require("fs");
-const solveImageCaptcha = require('./solveImageCaptcha.js');
+const solveImageCaptcha = require("./solveImageCaptcha.js");
 const cookies = require("./cookies.json");
 
 const puppeteer = require("puppeteer-extra");
@@ -7,8 +7,7 @@ const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
 puppeteer.use(StealthPlugin());
 
-module.exports = async function(login, password){
-
+module.exports = async function (login, password) {
   const browser = await puppeteer.launch({
     headless: false,
     args: [
@@ -24,7 +23,6 @@ module.exports = async function(login, password){
   const ua =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0";
 
-
   try {
     const page = await browser.newPage();
     await page.setUserAgent(ua);
@@ -35,40 +33,57 @@ module.exports = async function(login, password){
     await page.waitForTimeout(5000);
 
     try {
-      const captchaImgElement = await page.$eval("#captchaimg", () => true).catch(() => false);
+      const captchaImgElement = await page
+        .$eval("#captchaimg", () => true)
+        .catch(() => false);
       if (captchaImgElement) {
         await solveImageCaptcha(page);
-      };
+      }
     } catch (err) {
-      console.log('no captcha(');
+      console.log("no captcha(");
     }
 
     await page.waitForTimeout(1000);
-    
+
     await page.type('input[type="password"]', password);
-    await page.keyboard.press('Enter');
-    
-    await page.waitForNavigation('https://www.youtube.com/');
+    await page.keyboard.press("Enter");
+
+    await page.waitForNavigation("https://www.youtube.com/");
     const userCookies = await page.cookies();
-    await page.click('#avatar-btn');
-    const nickname = await page.$eval('#channel-container', elem => elem.textContent);
+
+    await page.click("#avatar-btn");
+    let nickname = await page.$eval(
+      "#channel-container",
+      (elem) => elem.textContent
+    );
+    nickname =
+      nickname.split("\n")[1].trim() + "\n" + nickname.split("\n")[3].trim();
+    console.log(nickname);
+
     await page.waitForTimeout(1000);
 
     await browser.close();
 
-    if (userCookies[0].domain.includes('youtube')){
-      const index = cookies.findIndex(item => item.login === login && item.password === password);
-      index === -1 ?
-      cookies.push({
-        login: login,
-        name: nickname,
-        password: password,
-        cookies: userCookies
-      }) : cookies[index].cookies = userCookies;
-    } 
-    fs.writeFile('./cookies.json', JSON.stringify(cookies, null, 2), (err) => { if (err) console.log(err)});
+    if (userCookies[0].domain.includes("youtube")) {
+      const index = cookies.findIndex(
+        (item) => item.login === login && item.password === password
+      );
+      if (index === -1) {
+        cookies.push({
+          login: login,
+          name: nickname,
+          password: password,
+          cookies: userCookies,
+        });
+      } else {
+        cookies[index].name = nickname;
+        cookies[index].cookies = userCookies;
+      }
+    }
+    fs.writeFile("./cookies.json", JSON.stringify(cookies, null, 2), (err) => {
+      if (err) console.log(err);
+    });
   } catch (err) {
-    console.log('login err', err.message);
+    console.log("login err", err.message);
   }
-  await browser.close();
 };

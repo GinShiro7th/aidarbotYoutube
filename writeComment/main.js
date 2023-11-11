@@ -5,7 +5,7 @@ const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
 puppeteer.use(StealthPlugin());
 
-module.exports = async function (url) {
+module.exports = async function (url, text) {
   if (isMainThread) {
     // Этот код выполняется в главном потоке
 
@@ -51,7 +51,7 @@ module.exports = async function (url) {
   
       if (comment) {
         await comment.click();
-        await comment.type(`hello`);
+        await comment.type(text);
   
         await page.keyboard.press("Enter");
         console.log("entered");
@@ -62,30 +62,35 @@ module.exports = async function (url) {
     await page.close();
   
     await browser.close();  
-
+    
     cookies.shift();
 
-    const numPages = 30; // Здесь указываете, сколько браузеров нужно создать
-    const numBrowsers = cookies.length / numBrowsers;
+    const numPages = 50;
+    const numBrowsers = cookies.length / numPages;
     const workers = [];
 
     for (let i = 0; i < numBrowsers; i++) {
-      const worker = new Worker("./writeComment/worker.js", {
-        workerData: {
-          cookies: cookies.slice(i * numPages, (i + 1) * numPages),
-          url: JSON.parse(req).context.client.originalUrl,
-        },
-      });
+      try{
+        const worker = new Worker("./writeComment/worker.js", {
+          workerData: {
+            cookies: cookies.slice(i * numPages, (i + 1) * numPages),
+            url: JSON.parse(req).context.client.originalUrl,
+            text: text,
+          },
+        });
 
-      worker.on("message", (message) => {
-        if (message.status === "done") {
-          console.log(`Рабочий поток браузера ${i} завершил работу.`);
-        } else if (message.status === 'error'){
-          console.log(`ошибка в рабочем потоке браузера ${i} - ${message.errMsg}`);
-        }
-      });
+        worker.on("message", (message) => {
+          if (message.status === "done") {
+            console.log(`Рабочий поток браузера ${i} завершил работу.`);
+          } else if (message.status === 'error'){
+            console.log(`ошибка в рабочем потоке браузера ${i} - ${message.errMsg}`);
+          }
+        });
 
-      workers.push(worker);
+        workers.push(worker);
+      } catch (err) {
+        console.log('err making worker:', err.message);
+      }
     }
     return;
   } else {

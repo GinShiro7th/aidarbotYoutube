@@ -13,7 +13,7 @@ module.exports = async function(url){
       "--no-sandbox",
       "--disable-gpu",
       "--enable-webgl",
-      "--window-size=800,800",
+      "--window-size=1900,1200",
     ],
   });
 
@@ -21,7 +21,7 @@ module.exports = async function(url){
     const page = await browser.newPage();
     await page.setCookie(...acc.cookies);
     
-    await page.goto(url, {timeout : 120000});
+    await page.goto(url, {timeout : 60000});
     
     try {
       const likeButton = await page.$('#segmented-like-button > ytd-toggle-button-renderer > yt-button-shape > button');
@@ -29,9 +29,10 @@ module.exports = async function(url){
       await likeButton.click();
 
     } catch (err) {
-      console.log('no sub button(');
+      console.log('no like button(');
     }
-    break;
+    await page.close();
   }
+  
   await browser.close();
 }
