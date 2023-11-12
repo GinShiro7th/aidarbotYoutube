@@ -50,8 +50,9 @@ module.exports = async function (login, password) {
 
     await page.waitForNavigation("https://www.youtube.com/");
     const userCookies = await page.cookies();
-
+    await page.waitForSelector('#avatar-btn');
     await page.click("#avatar-btn");
+    await page.waitForSelector('#channel-container');
     let nickname = await page.$eval(
       "#channel-container",
       (elem) => elem.textContent
@@ -85,5 +86,6 @@ module.exports = async function (login, password) {
     });
   } catch (err) {
     console.log("login err", err.message);
+    await browser.close();
   }
 };

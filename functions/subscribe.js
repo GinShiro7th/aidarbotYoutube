@@ -5,6 +5,7 @@ const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
 puppeteer.use(StealthPlugin());
 
+
 module.exports = async function(url){
   
   const browser = await puppeteer.launch({
@@ -13,26 +14,25 @@ module.exports = async function(url){
       "--no-sandbox",
       "--disable-gpu",
       "--enable-webgl",
-      "--window-size=1900,1200",
+      "--window-size=800,800",
     ],
   });
 
   for (const acc of cookies){
     const page = await browser.newPage();
     await page.setCookie(...acc.cookies);
-    
-    await page.goto(url, {timeout : 60000});
-    
+    console.log(acc.login, acc.password);
     try {
-      const likeButton = await page.$('#segmented-like-button > ytd-toggle-button-renderer > yt-button-shape > button');
-      console.log(likeButton);
-      await likeButton.click();
+      await page.goto(url, { waitUntil: 'load' });
+    
+      const subButton = await page.$('.yt-spec-touch-feedback-shape.yt-spec-touch-feedback-shape--touch-response-inverse');
+      console.log(subButton);
+      await subButton.click();
 
     } catch (err) {
-      console.log('no like button(');
+      console.log('no sub button(');
     }
     await page.close();
   }
-  
   await browser.close();
 }

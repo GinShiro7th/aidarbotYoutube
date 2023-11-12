@@ -40,11 +40,11 @@ module.exports = async function (url, text) {
       request.continue();
     });
     
-    await page.goto(url, { timeout: 60000 });
-    await page.waitForSelector("#chatframe");
-    const frames = await page.frames();
-    const chatframe = frames.find((frame) => frame.name() === "chatframe");
     try {
+      await page.goto(url, { timeout: 60000 });
+      await page.waitForSelector("#chatframe");
+      const frames = await page.frames();
+      const chatframe = frames.find((frame) => frame.name() === "chatframe");
       const comment = await chatframe.$(
         "#input.style-scope.yt-live-chat-message-input-renderer"
       );

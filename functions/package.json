@@ -1,0 +1,32 @@
+{
+  "name": "aidaryoutubebot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "2captcha": "^3.0.7",
+    "axios": "^1.5.1",
+    "google-auth-library": "^9.1.0",
+    "googleapis": "^128.0.0",
+    "http": "^0.0.1-security",
+    "https-proxy-agent": "^7.0.2",
+    "proxy-chain": "^2.3.0",
+    "puppeteer": "^21.4.1",
+    "puppeteer-cluster": "^0.23.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-proxy": "^1.0.2",
+    "puppeteer-extra-plugin-recaptcha": "^3.6.8",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "puppeteer-page-proxy": "^1.3.0",
+    "request": "^2.88.2",
+    "threads": "^1.7.0",
+    "youtube-api": "^3.0.1"
+  },
+  "description": ""
+}
