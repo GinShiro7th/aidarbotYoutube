@@ -4,10 +4,11 @@ const cookies = require("./cookies.json");
 
 const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+const useProxy = require('puppeteer-page-proxy');
 
 puppeteer.use(StealthPlugin());
 
-module.exports = async function (login, password) {
+module.exports = async function (login, password, proxy) {
   const browser = await puppeteer.launch({
     headless: false,
     args: [
@@ -15,6 +16,7 @@ module.exports = async function (login, password) {
       "--disable-gpu",
       "--enable-webgl",
       "--window-size=800,800",
+      "--disable-web-security",
     ],
   });
 
@@ -25,7 +27,8 @@ module.exports = async function (login, password) {
 
   try {
     const page = await browser.newPage();
-    await page.setUserAgent(ua);
+    
+    //await page.setUserAgent(ua);
     await page.goto(loginUrl, { waitUntil: "networkidle2" });
 
     await page.type('input[type="email"]', login);

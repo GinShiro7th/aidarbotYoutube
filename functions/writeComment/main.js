@@ -5,7 +5,15 @@ const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
 puppeteer.use(StealthPlugin());
 
+const commentsCount = require('./commentsCount.json');
+const botState = require('../botState.json');
+const fs = require('fs');
+
 module.exports = async function (url, text) {
+
+  botState.stoped = false;
+  fs.writeFile('./functions/botState.json', JSON.stringify(botState, null, 2), (err) => err ? console.log(err) : null);
+
   if (isMainThread) {
     // Этот код выполняется в главном потоке
 
@@ -18,6 +26,7 @@ module.exports = async function (url, text) {
           "--enable-webgl",
           "--window-size=1900,1200",
           '--disable-dev-shm-usage',
+          '--disable-web-security'
         ],
       },
     );
@@ -41,7 +50,7 @@ module.exports = async function (url, text) {
     });
     
     try {
-      await page.goto(url, { timeout: 60000 });
+      await page.goto(url, { timeout: 120000 });
       await page.waitForSelector("#chatframe");
       const frames = await page.frames();
       const chatframe = frames.find((frame) => frame.name() === "chatframe");
@@ -65,13 +74,16 @@ module.exports = async function (url, text) {
     
     cookies.shift();
 
+    commentsCount.count++;
+    //fs.writeFile('./functions/writeComment/commentsCount.json', JSON.stringify(commentsCount, null, 2), (err) => err ? console.log(err) : null);  
+
     const numPages = 50;
     const numBrowsers = cookies.length / numPages;
     const workers = [];
 
     for (let i = 0; i < numBrowsers; i++) {
       try{
-        const worker = new Worker("./writeComment/worker.js", {
+        const worker = new Worker("./functions/writeComment/worker.js", {
           workerData: {
             cookies: cookies.slice(i * numPages, (i + 1) * numPages),
             url: JSON.parse(req).context.client.originalUrl,
@@ -80,6 +92,7 @@ module.exports = async function (url, text) {
         });
 
         worker.on("message", (message) => {
+          workers.pop();
           if (message.status === "done") {
             console.log(`Рабочий поток браузера ${i} завершил работу.`);
           } else if (message.status === 'error'){
@@ -92,6 +105,9 @@ module.exports = async function (url, text) {
         console.log('err making worker:', err.message);
       }
     }
+    while (workers.length){
+      null
+    };
     return;
   } else {
     // Этот код не будет выполняться в главном потоке
