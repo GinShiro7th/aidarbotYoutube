@@ -7,6 +7,8 @@ const bot = new TelegramBot(token, {
   polling: true,
 });
 
+global.commentsCount = 0;
+
 bot.on("message", async (msg) => {
    console.log(msg.from.username, msg.text);
    await checkCommand(msg, bot);

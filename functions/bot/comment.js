@@ -17,25 +17,11 @@ module.exports = async function(msg, bot, option){
       break;
     case '3':
       const text = msg.text;
-      const commentsCount = require('../writeComment/commentsCount.json');
-      commentsCount.count = 0;
-      fs.writeFile('./functions/writeComment/commentsCount.json', JSON.stringify(commentsCount, null, 2), (err) => err ? console.log(err) : null);        
-          
-      const proggresMessage = await bot.sendMessage(msg.chat.id, "комментариев написано: "+commentsCount.count);
-      const iter = setInterval(async () => {
-        const commentsCount = require('../writeComment/commentsCount.json');
-        try {
-          await bot.editMessageText("комментариев написано: "+commentsCount.count, {message_id: proggresMessage.message_id, chat_id: msg.chat.id});
-        } catch (err) {
-          null;
-        }
-      }, 1000);
       
-      await writeComment(users[index].args[0], text);
-      
-      clearInterval(iter);
-      //await bot.deleteMessage(msg.chat.id, proggresMessage.message_id);
-      await bot.sendMessage(msg.chat.id, '✅Все аккаунты успешно написали комментарии');
+      global.commentsCount = 0;
+
+      await writeComment(users[index].args[0], text, msg, bot);
+
       users[index].command = 'start';
       users[index].args = [];
       break;

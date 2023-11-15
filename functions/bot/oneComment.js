@@ -19,7 +19,7 @@ module.exports = async function(msg, bot, option){
       const text = msg.text;
       await bot.sendMessage(msg.chat.id, "Пришилите номер аккаунта, с которого нужно написать комментарий");
       users[index].command = 'oneNum';
-      users.args[1] = text;
+      users[index].args[1] = text;
       break
     case '4':
       const num = msg.text;
@@ -29,7 +29,7 @@ module.exports = async function(msg, bot, option){
           await writeComment(users[index].args[0], users[index].args[1], num);
           res(123);
         })
-        await bot.sendMessage(msg.chat.id, `Аккаунт ${cookies[i].name.split('\n')[0]} успешно написал комметарий`);
+        await bot.sendMessage(msg.chat.id, `Аккаунт ${cookies[i].name.split('\n')[0]} успешно написал комментарий`);
       } catch (err) {
         console.log('writing one commnet err:', err.message);
       }

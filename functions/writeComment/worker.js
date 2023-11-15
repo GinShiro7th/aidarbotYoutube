@@ -3,8 +3,7 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
 puppeteer.use(StealthPlugin());
-
-const fs = require("fs");
+const fs = require('fs');
 
 (async () => {
   const cookies = workerData.cookies;
@@ -24,11 +23,15 @@ const fs = require("fs");
   });
   try {
     for (const cookie of cookies) {
-      const botState = require("../botState.json");
-      if (botState.stoped) break;
-      const page = await browser.newPage();
+      const botState = JSON.parse(fs.readFileSync('./functions/botState.json', 'utf8'));
 
-      console.log(cookie.login, cookie.password);
+      console.log(cookie.name.split('\n')[0], 'stoped ? -', botState.stoped);
+
+      if (botState.stoped){ 
+        break 
+      }
+
+      const page = await browser.newPage();
 
       await page.setCookie(...cookie.cookies);
 
@@ -46,7 +49,7 @@ const fs = require("fs");
           await page.keyboard.press("Enter");
           
           parentPort.postMessage({status: "entered"});
-          
+
           console.log("entered");
         }
       } catch (err) {

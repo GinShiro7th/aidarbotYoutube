@@ -5,18 +5,18 @@ const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
 puppeteer.use(StealthPlugin());
 
-const commentsCount = require('./commentsCount.json');
 const botState = require('../botState.json');
 const fs = require('fs');
 
-module.exports = async function (url, text) {
-
-  botState.stoped = false;
-  fs.writeFile('./functions/botState.json', JSON.stringify(botState, null, 2), (err) => err ? console.log(err) : null);
+module.exports = async function (url, text, msg, bot) {
 
   if (isMainThread) {
+    botState.stoped = false;
+    fs.writeFile('./functions/botState.json', JSON.stringify(botState, null, 2), (err) => err ? console.log(err) : null);
+    
     // Этот код выполняется в главном потоке
-
+    const proggresMessage = await bot.sendMessage(msg.chat.id, "комментариев написано: "+global.commentsCount);
+      
     const browser = await puppeteer.launch(
       {
         headless: false,
@@ -72,34 +72,38 @@ module.exports = async function (url, text) {
   
     await browser.close();  
     
-    cookies.shift();
+    const cook = cookies.slice(1);
 
-    commentsCount.count++;
-    fs.writeFile('./functions/writeComment/commentsCount.json', JSON.stringify(commentsCount, null, 2), (err) => err ? console.log(err) : null);  
-
+    global.commentsCount++;
+    await bot.editMessageText("комментариев написано: "+global.commentsCount, {message_id: proggresMessage.message_id, chat_id: msg.chat.id});
+    
     const numPages = 50;
-    const numBrowsers = cookies.length / numPages;
+    const numBrowsers = cook.length / numPages;
     const workers = [];
 
     for (let i = 0; i < numBrowsers; i++) {
       try{
         const worker = new Worker("./functions/writeComment/worker.js", {
           workerData: {
-            cookies: cookies.slice(i * numPages, (i + 1) * numPages),
+            cookies: cook.slice(i * numPages, (i + 1) * numPages),
             url: JSON.parse(req).context.client.originalUrl,
             text: text,
           },
         });
 
-        worker.on("message", (message) => {
-          workers.pop();
+        worker.on("message", async (message) => {
           if (message.status === "done") {
             console.log(`Рабочий поток браузера ${i} завершил работу.`);
+            workers.pop();
+            if (worker.length === 0){
+              await bot.sendMessage(msg.chat.id, '✅Все аккаунты успешно написали комментарии');
+            }
           } else if (message.status === 'error'){
             console.log(`ошибка в рабочем потоке браузера ${i} - ${message.errMsg}`);
           } else if (message.status === "entered"){
-            commentsCount.count++;
-            fs.writeFile('./functions/writeComment/commentsCount.json', JSON.stringify(commentsCount, null, 2), (err) => err ? console.log(err) : null);          
+            console.log('com count', global.commentsCount);
+            global.commentsCount++;
+            await bot.editMessageText("комментариев написано: "+global.commentsCount, {message_id: proggresMessage.message_id, chat_id: msg.chat.id});
           }
         });
 
@@ -108,10 +112,7 @@ module.exports = async function (url, text) {
         console.log('err making worker:', err.message);
       }
     }
-    while (workers.length){
-      null
-    };
-    return;
+    
   } else {
     // Этот код не будет выполняться в главном потоке
   }
