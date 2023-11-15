@@ -45,9 +45,7 @@ const fs = require("fs");
 
           await page.keyboard.press("Enter");
           
-          const commentsCount = require('./commentsCount.json');
-          commentsCount.count++;
-          fs.writeFile('./functions/writeComment/commentsCount.json', JSON.stringify(commentsCount, null, 2), (err) => err ? console.log(err) : null);        
+          parentPort.postMessage({status: "entered"});
           
           console.log("entered");
         }

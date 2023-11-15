@@ -1,5 +1,5 @@
 const { Worker, isMainThread } = require("worker_threads");
-const cookies = require("../cookies.json");
+const cookies = require('../../cookies.json');
 const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
@@ -75,7 +75,7 @@ module.exports = async function (url, text) {
     cookies.shift();
 
     commentsCount.count++;
-    //fs.writeFile('./functions/writeComment/commentsCount.json', JSON.stringify(commentsCount, null, 2), (err) => err ? console.log(err) : null);  
+    fs.writeFile('./functions/writeComment/commentsCount.json', JSON.stringify(commentsCount, null, 2), (err) => err ? console.log(err) : null);  
 
     const numPages = 50;
     const numBrowsers = cookies.length / numPages;
@@ -97,6 +97,9 @@ module.exports = async function (url, text) {
             console.log(`Рабочий поток браузера ${i} завершил работу.`);
           } else if (message.status === 'error'){
             console.log(`ошибка в рабочем потоке браузера ${i} - ${message.errMsg}`);
+          } else if (message.status === "entered"){
+            commentsCount.count++;
+            fs.writeFile('./functions/writeComment/commentsCount.json', JSON.stringify(commentsCount, null, 2), (err) => err ? console.log(err) : null);          
           }
         });
 

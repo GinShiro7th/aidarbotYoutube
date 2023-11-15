@@ -1,6 +1,6 @@
 const fs = require("fs");
 const solveImageCaptcha = require("./solveImageCaptcha.js");
-const cookies = require("./cookies.json");
+const cookies = require("../cookies.json");
 
 const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");

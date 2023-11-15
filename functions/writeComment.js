@@ -1,4 +1,4 @@
-const cookies = require("./cookies.json");
+const cookies = require("../cookies.json");
 
 const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
@@ -21,7 +21,7 @@ module.exports = async function (url, text, num) {
   
   const page = await browser.newPage();
   try {
-    const index = Number(num);
+    const index = Number(num) - 1;
     console.log(cookies[index].login, cookies[index].password);
     console.log(text);
     

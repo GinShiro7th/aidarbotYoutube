@@ -20,12 +20,10 @@ module.exports = async function(msg, bot, option){
       const fileId = msg.document.file_id;
       const filename = msg.document.file_name;
       const savePath = `./files/${filename}`;
-      console.log(savePath);
 
       await downloadFile(fileId, savePath);
 
       const data = fs.readFileSync(savePath).toString();
-      
       
       const accountsInfo = data.split('\n');
       let curr = 0;

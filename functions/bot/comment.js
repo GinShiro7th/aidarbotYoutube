@@ -30,12 +30,11 @@ module.exports = async function(msg, bot, option){
           null;
         }
       }, 1000);
-      await new Promise(async (res) => {
-        await writeComment(users[index].args[0], text);
-        res(123);
-      });
+      
+      await writeComment(users[index].args[0], text);
+      
       clearInterval(iter);
-      await bot.deleteMessage(msg.chat.id, proggresMessage.message_id);
+      //await bot.deleteMessage(msg.chat.id, proggresMessage.message_id);
       await bot.sendMessage(msg.chat.id, '✅Все аккаунты успешно написали комментарии');
       users[index].command = 'start';
       users[index].args = [];

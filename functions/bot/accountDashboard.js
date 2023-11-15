@@ -1,5 +1,5 @@
 module.exports = async function (msg, bot) {
-  const accounts = require('../cookies.json');
+  const accounts = require('../../cookies.json');
   let mes = [];
   let dashboard = "Список ваших аккаунтов\n";
   for (let i = 0; i < accounts.length; i++) {
@@ -7,7 +7,6 @@ module.exports = async function (msg, bot) {
     if (account.name)
       if (i % 30 || i === 0) {
         dashboard += i + 1 + ". " + account.name.split("\n")[0] + "\n";
-        console.log(dashboard);
       } else {
         mes.push(dashboard);
         dashboard = i + 1 + ". " + account.name.split("\n")[0] + "\n";

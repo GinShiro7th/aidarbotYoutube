@@ -1,6 +1,8 @@
 const accountDashboard = require('./functions/bot/accountDashboard');
 const addAccounts = require('./functions/bot/addAccount');
 const comment = require('./functions/bot/comment');
+const stopCommenting = require('./functions/bot/stopCommenting');
+const oneComment = require('./functions/bot/oneComment');
 
 const users = require('./users.json');
 
@@ -24,8 +26,6 @@ module.exports = async function (msg, bot) {
             ["Добавить аккаунты"],
             ["Написать комментарии", "Остановить написание"],
             ["Написать с одного аккаунта"],
-            ["Поставить лайк"],
-            ["Подписаться"],
           ],
           resize_keyboard: true,
         },
@@ -40,6 +40,12 @@ module.exports = async function (msg, bot) {
     case "Написать комментарии":
       await comment(msg, bot, '1');
       break;
+    case "Остановить написание":
+      await stopCommenting(msg, bot);
+      break;
+    case "Написать с одного аккаунта":
+      await oneComment(msg, bot, '1');
+      break;
     default:
       switch (users[userIndex].command){
         case 'addTxt':
@@ -51,6 +57,15 @@ module.exports = async function (msg, bot) {
         case 'commentText':
           await comment(msg, bot, '3');
           break;
+        case 'oneUrl':
+          await oneComment(msg, bot, '2');
+          break;
+        case 'oneText':
+          await oneComment(msg, bot, '3');
+          break;
+        case 'oneNum':
+          await oneComment(msg, bot, '4');
+          break
       }
   }
 };
