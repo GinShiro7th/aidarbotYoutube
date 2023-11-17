@@ -3,12 +3,23 @@ const solveImageCaptcha = require("./solveImageCaptcha.js");
 const cookies = require("../cookies.json");
 
 const puppeteer = require("puppeteer-extra");
+//const puppeteer = require('puppeteer');
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
-const useProxy = require('puppeteer-page-proxy');
+const RecaptchaPlugin = require('puppeteer-extra-plugin-recaptcha')
 
 puppeteer.use(StealthPlugin());
+puppeteer.use(
+  RecaptchaPlugin({
+    provider: {
+      id: '2captcha',
+      token: '7a3e39ae301c8d02cb1bf1ca713e3eca' // REPLACE THIS WITH YOUR OWN 2CAPTCHA API KEY ⚡
+    },
+    visualFeedback: true // colorize reCAPTCHAs (violet = detected, green = solved)
+  })
+);
 
-module.exports = async function (login, password, proxy) {
+
+async function loginAccount(login, password, proxy) {
   const browser = await puppeteer.launch({
     headless: false,
     args: [
@@ -26,11 +37,13 @@ module.exports = async function (login, password, proxy) {
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0";
 
   try {
-    const page = await browser.newPage();
-    
-    //await page.setUserAgent(ua);
-    await page.goto(loginUrl, { waitUntil: "networkidle2" });
+    const context = await browser.createIncognitoBrowserContext({proxy: proxy.split('@')[0]});
+    const page = await context.newPage();
+    await page.setUserAgent(ua);
+    await page.authenticate({username: proxy.split('@')[1].split(':')[0], password:proxy.split('@')[1].split(':')[1]});
 
+    await page.goto(loginUrl, { waitUntil: "networkidle2" });
+  
     await page.type('input[type="email"]', login);
     await page.keyboard.press("Enter");
     await page.waitForTimeout(5000);
@@ -47,6 +60,7 @@ module.exports = async function (login, password, proxy) {
     }
 
     await page.waitForTimeout(1000);
+    await page.solveRecaptchas();
 
     await page.type('input[type="password"]', password);
     await page.keyboard.press("Enter");
@@ -92,3 +106,7 @@ module.exports = async function (login, password, proxy) {
     await browser.close();
   }
 };
+
+module.exports = loginAccount;
+
+loginAccount("alexhales728282@gmail.com", "DtFy6ugZhu89", "user136082:zt8fi4@212.116.242.93:12544");

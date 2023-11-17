@@ -56,6 +56,7 @@ const fs = require('fs');
         console.log("error writing comment:", err.message);
       }
       await page.close();
+      break;
     }
     await browser.close();
     parentPort.postMessage({ status: "done" });
