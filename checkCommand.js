@@ -18,7 +18,7 @@ module.exports = async function (msg, bot) {
   const userIndex = users.findIndex(user => user.id === msg.from.id);
 
   switch (msg.text) {
-    case "start":
+    case "/start":
       await bot.sendMessage(msg.chat.id, "Взаимодействуйте с помощью кнопок", {
         reply_markup: {
           keyboard: [
