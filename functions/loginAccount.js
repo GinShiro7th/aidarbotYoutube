@@ -2,10 +2,11 @@ const fs = require("fs");
 const solveImageCaptcha = require("./solveImageCaptcha.js");
 const cookies = require("../cookies.json");
 
+// const puppeteer = require('puppeteer');
 const puppeteer = require("puppeteer-extra");
-//const puppeteer = require('puppeteer');
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const RecaptchaPlugin = require('puppeteer-extra-plugin-recaptcha')
+const useProxy = require('puppeteer-page-proxy');
 
 puppeteer.use(StealthPlugin());
 puppeteer.use(
@@ -37,11 +38,9 @@ async function loginAccount(login, password, proxy) {
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0";
 
   try {
-    const context = await browser.createIncognitoBrowserContext({proxy: proxy.split('@')[0]});
-    const page = await context.newPage();
+    const page = await browser.newPage();
     await page.setUserAgent(ua);
-    await page.authenticate({username: proxy.split('@')[1].split(':')[0], password:proxy.split('@')[1].split(':')[1]});
-
+    
     await page.goto(loginUrl, { waitUntil: "networkidle2" });
   
     await page.type('input[type="email"]', login);
@@ -102,7 +101,7 @@ async function loginAccount(login, password, proxy) {
       if (err) console.log(err);
     });
   } catch (err) {
-    console.log("login err", err.message);
+    console.log("login err", err);
     await browser.close();
   }
 };
