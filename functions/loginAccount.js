@@ -2,20 +2,12 @@ const fs = require("fs");
 const solveImageCaptcha = require("./solveImageCaptcha.js");
 const cookies = require("../cookies.json");
 
-const puppeteer = require("puppeteer-extra");
+const puppeteer = require("puppeteer");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
-const recaptchaPlugin = require('puppeteer-extra-plugin-recaptcha');
+const Captcha = require('2captcha');
+const Solver = new Captcha.Solver("7a3e39ae301c8d02cb1bf1ca713e3eca");
 
 puppeteer.use(StealthPlugin());
-puppeteer.use(
-  recaptchaPlugin({
-    provider: {
-      id: '2captcha',
-      token: '7a3e39ae301c8d02cb1bf1ca713e3eca'
-    },
-    visualFeedback: true
-  }
-));
 
 async function loginAccount(login, password, proxy) {
 
@@ -66,8 +58,11 @@ async function loginAccount(login, password, proxy) {
     await page.waitForTimeout(3000);
     
     try {
-      await page.$('#view_container > div > div > div.pwWryf.bxPAYd > div > div.WEQkZc > div > form > span > section > div > div > div.SdBahf');
-      await page.solveRecaptchas();
+      const captchaContainer = await page.$('#view_container > div > div > div.pwWryf.bxPAYd > div > div.WEQkZc > div > form > span > section > div > div > div.SdBahf');
+      const sitekey = await (await captchaContainer.getProperty('site-key')).jsonValue();
+      const res = await Solver.recaptcha(sitekey, page.url());
+      await page.evaluate( `document.getElementById("g-recaptcha-response").textContent=arguments[0]`, res.data)
+
       await page.click('#view_container > div > div > div.pwWryf.bxPAYd > div > div.zQJV3 > div > div.qhFLie > div > div > button');
     } catch (err) {
       console.log("no captcha(");
@@ -78,7 +73,7 @@ async function loginAccount(login, password, proxy) {
     await page.type('input[type="password"]', password);
     await page.keyboard.press("Enter");
 
-    await page.waitForNavigation({timeout: 600000});
+    await page.waitForNavigation({timeout: 30000});
     const userCookies = await page.cookies();
     await page.waitForSelector('#avatar-btn');
     await page.click("#avatar-btn");
