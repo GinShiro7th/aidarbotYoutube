@@ -62,6 +62,7 @@ const fs = require('fs');
         }
       } catch (err) {
         console.log("error writing comment:", err.message);
+        parentPort.postMessage({status: "comment error", acc: { login: cookie.login, name: cookie.name}});
       }
       await page.close();
       break;

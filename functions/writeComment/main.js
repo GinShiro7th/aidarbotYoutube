@@ -79,6 +79,8 @@ module.exports = async function (url, text, msg, bot) {
         }
       } catch (err) {
         console.log("error writing comment:", err);
+        cookies.splice(i);
+
       }
       await page.close();
     }
@@ -130,6 +132,9 @@ module.exports = async function (url, text, msg, bot) {
               console.log('com count', global.commentsCount);
               global.commentsCount++;
               await bot.editMessageText("комментариев написано: "+global.commentsCount, {message_id: proggresMessage.message_id, chat_id: msg.chat.id});
+            } else if (message.status === "comment error"){
+              console.log(`${message.acc.name} - blocked`);
+              cookies.splice(cookies.findIndex(obj => obj.login === message.acc.login));
             }
           });
 
@@ -149,7 +154,7 @@ module.exports = async function (url, text, msg, bot) {
         console.log('err making worker:', err.message);
       }
     }
-    
+    fs.writeFile('./cookies.json', JSON.stringify(cookies, null, 2), (err) => {if (err) console.log(err)});
   } else {
     // Этот код не будет выполняться в главном потоке
   }
