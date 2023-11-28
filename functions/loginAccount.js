@@ -4,8 +4,18 @@ const cookies = require("../cookies.json");
 
 const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+const recaptchaPlugin = require('puppeteer-extra-plugin-recaptcha');
 
 puppeteer.use(StealthPlugin());
+puppeteer.use(
+  recaptchaPlugin({
+    provider: {
+      id: '2captcha',
+      token: '7a3e39ae301c8d02cb1bf1ca713e3eca'
+    },
+    visualFeedback: true
+  }
+));
 
 async function loginAccount(login, password, proxy) {
 
@@ -53,7 +63,17 @@ async function loginAccount(login, password, proxy) {
       console.log("no captcha(");
     }
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(3000);
+    
+    try {
+      await page.$('#view_container > div > div > div.pwWryf.bxPAYd > div > div.WEQkZc > div > form > span > section > div > div > div.SdBahf');
+      await page.solveRecaptchas();
+      await page.click('#view_container > div > div > div.pwWryf.bxPAYd > div > div.zQJV3 > div > div.qhFLie > div > div > button');
+    } catch (err) {
+      console.log("no captcha(");
+    }
+
+    await page.waitForTimeout(3000);
 
     await page.type('input[type="password"]', password);
     await page.keyboard.press("Enter");

@@ -135,6 +135,7 @@ module.exports = async function (url, text, msg, bot) {
             } else if (message.status === "comment error"){
               console.log(`${message.acc.name} - blocked`);
               cookies.splice(cookies.findIndex(obj => obj.login === message.acc.login));
+              fs.writeFile('./cookies.json', JSON.stringify(cookies, null, 2), (err) => {if (err) console.log(err)});
             }
           });
 
@@ -154,7 +155,6 @@ module.exports = async function (url, text, msg, bot) {
         console.log('err making worker:', err.message);
       }
     }
-    fs.writeFile('./cookies.json', JSON.stringify(cookies, null, 2), (err) => {if (err) console.log(err)});
   } else {
     // Этот код не будет выполняться в главном потоке
   }
