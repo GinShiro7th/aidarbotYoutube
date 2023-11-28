@@ -3,6 +3,7 @@
     "2captcha": "^3.0.7",
     "axios": "^1.6.1",
     "node-telegram-bot-api": "^0.64.0",
+    "proxy-chain": "^2.4.0",
     "puppeteer": "^21.5.2",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-recaptcha": "^3.6.8",

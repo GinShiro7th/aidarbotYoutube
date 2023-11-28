@@ -8,7 +8,7 @@ module.exports = async function(msg, bot, option){
     case '1':
       await bot.sendMessage(
         msg.chat.id,
-        "Пришлите файл, в которым лежат данные для аккаунтов.\nФормат файла: \n'логин:пароль\nлогин:пароль\n...'"
+        "Пришлите файл, в которым лежат данные для аккаунтов.\nФормат файла: \n'логин:пароль прокси(http)://юзер:пароль@хост:порт\nлогин:пароль прокси(http)://юзер:пароль@хост:порт\n...'"
       );
       users[users.findIndex(item => item.id === msg.from.id)].command = 'addTxt';
       break;
@@ -36,10 +36,13 @@ module.exports = async function(msg, bot, option){
         const logPass = acc.split(' ')[0];
         const login = logPass.split(':')[0];
         const password = logPass.split(':')[1];
+        const proxy = acc.split(' ')[1].replace('\r', '');
+        
+        console.log(proxy);
 
         if (login && password)
           await new Promise(async (resolve) => {
-            await loginAccount(login, password)
+            await loginAccount(login, password, proxy);
             resolve(123);
           });
         curr++;

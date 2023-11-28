@@ -6,6 +6,11 @@ puppeteer.use(StealthPlugin());
 const fs = require('fs');
 
 (async () => {
+
+  const proxyServer = workerData.proxy.replace(/\/(.*?)@/g, "//");
+  const proxyUsername = workerData.proxy.substring(workerData.proxy.lastIndexOf('/')+1, workerData.proxy.indexOf('@')).split(':')[0];
+  const proxyPassword = workerData.proxy.substring(workerData.proxy.lastIndexOf('/')+1, workerData.proxy.indexOf('@')).split(':')[1];
+  
   const cookies = workerData.cookies;
   const url = workerData.url;
   const text = workerData.text;
@@ -19,6 +24,7 @@ const fs = require('fs');
       "--enable-webgl",
       "--window-size=1900,1200",
       "--disable-dev-shm-usage",
+      `--proxy-server=${proxyServer}`
     ],
   });
   try {
@@ -32,7 +38,9 @@ const fs = require('fs');
       }
 
       const page = await browser.newPage();
-
+      
+      await page.authenticate({username: proxyUsername, password: proxyPassword});
+    
       await page.setCookie(...cookie.cookies);
 
       try {

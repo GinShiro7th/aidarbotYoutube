@@ -17,23 +17,30 @@ module.exports = async function (url, text, msg, bot) {
     // Этот код выполняется в главном потоке
     const proggresMessage = await bot.sendMessage(msg.chat.id, "комментариев написано: "+global.commentsCount);
       
-    const browser = await puppeteer.launch(
-      {
-        headless: false,
-        args: [
-          "--no-sandbox",
-          "--disable-gpu",
-          "--enable-webgl",
-          "--window-size=1900,1200",
-          '--disable-dev-shm-usage',
-          '--disable-web-security'
-        ],
-      },
-    );
     let req;
     let i = 0;
     for(; i < cookies.length; ){
+      const proxyServer = cookies[i].proxy.replace(/\/(.*?)@/g, "//");
+      const proxyUsername = cookies[i].proxy.substring(cookies[i].proxy.lastIndexOf('/')+1, cookies[i].proxy.indexOf('@')).split(':')[0];
+      const proxyPassword = cookies[i].proxy.substring(cookies[i].proxy.lastIndexOf('/')+1, cookies[i].proxy.indexOf('@')).split(':')[1];
+      
+      const browser = await puppeteer.launch(
+        {
+          headless: false,
+          args: [
+            "--no-sandbox",
+            "--disable-gpu",
+            "--enable-webgl",
+            "--window-size=1900,1200",
+            '--disable-dev-shm-usage',
+            '--disable-web-security',
+            `--proxy-server=${proxyServer}`
+          ],
+        },
+      );
       const page = await browser.newPage();
+      await page.authenticate({username: proxyUsername, password: proxyPassword});
+    
       console.log(cookies[i].login, cookies[i].password);
       await page.setCookie(...cookies[i].cookies);
       
@@ -67,6 +74,7 @@ module.exports = async function (url, text, msg, bot) {
           console.log("entered");
           global.commentsCount++;
           i++;
+          await browser.close();  
           break;
         }
       } catch (err) {
@@ -74,43 +82,69 @@ module.exports = async function (url, text, msg, bot) {
       }
       await page.close();
     }
-    await browser.close();  
     
-    const cook = cookies.slice(i);
-
     await bot.editMessageText("комментариев написано: "+global.commentsCount, {message_id: proggresMessage.message_id, chat_id: msg.chat.id});
 
-    const numPages = 50;
-    const numBrowsers = cook.length / numPages;
+
+    const cook = cookies.slice(i);
     const workers = [];
 
-    for (let i = 0; i < numBrowsers; i++) {
+    function divideByField(arr, field) {
+      const groups = {};
+      arr.forEach(obj => {
+        const value = obj[field];
+        if (!groups[value]) {
+          groups[value] = [];
+        }
+        groups[value].push(obj);
+      });
+    
+      return Object.values(groups);
+    }
+    
+    const dividedCookies = divideByField(cook, "proxy");
+  
+    for (let i = 0; i < dividedCookies.length; i++) {
       try{
-        const worker = new Worker("./functions/writeComment/worker.js", {
-          workerData: {
-            cookies: cook.slice(i * numPages, (i + 1) * numPages),
-            url: JSON.parse(req).context.client.originalUrl,
-            text: text,
-          },
-        });
+        function spawnWorker(){
+          const worker = new Worker("./functions/writeComment/worker.js", {
+            workerData: {
+              cookies: dividedCookies[i],
+              url: JSON.parse(req).context.client.originalUrl,
+              text: text,
+              proxy: dividedCookies[i][0].proxy
+            },
+          });
 
-        worker.on("message", async (message) => {
-          if (message.status === "done") {
-            console.log(`Рабочий поток браузера ${i} завершил работу.`);
-            workers.pop();
-            if (workers.length === 0){
-              await bot.sendMessage(msg.chat.id, '✅Все аккаунты успешно написали комментарии');
+          worker.on("message", async (message) => {
+            if (message.status === "done") {
+              console.log(`Рабочий поток браузера ${i} завершил работу.`);
+              workers.pop();
+              if (workers.length === 0){
+                await bot.sendMessage(msg.chat.id, '✅Все аккаунты успешно написали комментарии');
+              }
+            } else if (message.status === 'error'){
+              console.log(`ошибка в рабочем потоке браузера ${i} - ${message.errMsg}`);
+              workers.pop();
+            } else if (message.status === "entered"){
+              console.log('com count', global.commentsCount);
+              global.commentsCount++;
+              await bot.editMessageText("комментариев написано: "+global.commentsCount, {message_id: proggresMessage.message_id, chat_id: msg.chat.id});
             }
-          } else if (message.status === 'error'){
-            console.log(`ошибка в рабочем потоке браузера ${i} - ${message.errMsg}`);
-          } else if (message.status === "entered"){
-            console.log('com count', global.commentsCount);
-            global.commentsCount++;
-            await bot.editMessageText("комментариев написано: "+global.commentsCount, {message_id: proggresMessage.message_id, chat_id: msg.chat.id});
-          }
-        });
+          });
 
-        workers.push(worker);
+          workers.push(worker);
+        }
+        if (workers.length < 5)
+          spawnWorker()
+        else{
+          const iter = setInterval(() => {
+            if (workers.length < 5){
+              spawnWorker();
+              clearInterval(iter);   
+            }
+          }, 100);
+        }
       } catch (err) {
         console.log('err making worker:', err.message);
       }

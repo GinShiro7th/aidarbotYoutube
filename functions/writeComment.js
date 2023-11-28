@@ -8,22 +8,29 @@ const botState = require('./botState.json');
 puppeteer.use(StealthPlugin());
 
 module.exports = async function (url, text, num) {
-  const browser = await puppeteer.launch({
-    headless: false,
-    args: [
-      "--no-sandbox",
-      "--disable-gpu",
-      "--enable-webgl",
-      "--window-size=1900,1200",
-      "--disable-dev-shm-usage",
-    ],
-  });
-  
-  const page = await browser.newPage();
+  let browser;
   try {
     const index = Number(num) - 1;
     console.log(cookies[index].login, cookies[index].password);
-    console.log(text);
+    
+    const proxyServer = cookies[index].proxy.replace(/\/(.*?)@/g, "//");
+    const proxyUsername = cookies[index].proxy.substring(cookies[index].proxy.lastIndexOf('/')+1, cookies[index].proxy.indexOf('@')).split(':')[0];
+    const proxyPassword = cookies[index].proxy.substring(cookies[index].proxy.lastIndexOf('/')+1, cookies[index].proxy.indexOf('@')).split(':')[1];
+  
+    browser = await puppeteer.launch({
+      headless: false,
+      args: [
+        "--no-sandbox",
+        "--disable-gpu",
+        "--enable-webgl",
+        "--window-size=1900,1200",
+        "--disable-dev-shm-usage",
+        `--proxy-server=${proxyServer}`
+      ],
+    });
+    
+    const page = await browser.newPage();
+    await page.authenticate({username: proxyUsername, password: proxyPassword});
     
     await page.setCookie(...cookies[index].cookies);
 
@@ -47,10 +54,9 @@ module.exports = async function (url, text, num) {
     } catch (err) {
       console.log("error writing comment:", err.message);
     }
+    await page.close();
   } catch (err) {
     console.log('error writing comment for one user:', err.message);
   }
-  await page.close();
-
   await browser.close();
 };
