@@ -34,11 +34,10 @@ module.exports = async function(url){
       await page.goto(url, { waitUntil: 'load' });
     
       const subButton = await page.$('.yt-spec-touch-feedback-shape.yt-spec-touch-feedback-shape--touch-response-inverse');
-      console.log(subButton);
       await subButton.click();
 
     } catch (err) {
-      console.log('no sub button(');
+      console.log('no sub button(', err.message);
     }
     await page.close();
     await browser.close();
