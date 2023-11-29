@@ -2,11 +2,21 @@ const fs = require("fs");
 const solveImageCaptcha = require("./solveImageCaptcha.js");
 const cookies = require("../cookies.json");
 
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const Captcha = require('2captcha');
 const Solver = new Captcha.Solver("7a3e39ae301c8d02cb1bf1ca713e3eca");
+const RecaptchaPlugin = require('puppeteer-extra-plugin-recaptcha');
 
+puppeteer.use(
+  RecaptchaPlugin({
+    provider: {
+      id: '2captcha',
+      token: "7a3e39ae301c8d02cb1bf1ca713e3eca" // REPLACE THIS WITH YOUR OWN 2CAPTCHA API KEY ⚡
+    },
+    visualFeedback: true // colorize reCAPTCHAs (violet = detected, green = solved)
+  })
+);
 puppeteer.use(StealthPlugin());
 
 async function loginAccount(login, password, proxy) {
@@ -59,13 +69,15 @@ async function loginAccount(login, password, proxy) {
     
     try {
       const captchaContainer = await page.$('#view_container > div > div > div.pwWryf.bxPAYd > div > div.WEQkZc > div > form > span > section > div > div > div.SdBahf');
-      const sitekey = await (await captchaContainer.getProperty('site-key')).jsonValue();
-      const res = await Solver.recaptcha(sitekey, page.url());
-      await page.evaluate( `document.getElementById("g-recaptcha-response").textContent=arguments[0]`, res.data)
-
+      // const sitekey = await page.evaluate(el => el.getAttribute('data-site-key'), captchaContainer)
+      // console.log(sitekey);
+      // const res = await Solver.recaptcha(sitekey, page.url());
+      // await page.evaluate('var element=document.getElementById("g-recaptcha-response"); element.style.display="";');
+      // await page.type("#g-recaptcha-response", res.data)
+      await page.solveRecaptchas();
       await page.click('#view_container > div > div > div.pwWryf.bxPAYd > div > div.zQJV3 > div > div.qhFLie > div > div > button');
     } catch (err) {
-      console.log("no captcha(");
+      console.log("no REcaptcha(", err.message);
     }
 
     await page.waitForTimeout(3000);
