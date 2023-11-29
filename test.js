@@ -1,30 +1,23 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require("puppeteer-extra");
 
 (async () => {
 
-  let proxies = [
-    '188.130.218.182:1050'
-  ];
+  const browser = await puppeteer.launch({
+    headless: false,
+    args: [
+      "--no-sandbox",
+      "--disable-gpu",
+      "--enable-webgl",
+      "--window-size=800,800",
+      // `--proxy-server=http://95.31.211.120:30266`,
+    ],
+  });
 
-  for (let i=0; i<10; i++){
-    const browser = await puppeteer.launch({
-      headless: false,
-      args: [
-        "--no-sandbox",
-        "--disable-gpu",
-        "--enable-webgl",
-        "--window-size=800,800",
-        `--proxy-server=http://${proxies[i]}`
-      ],
-    });
+  const page = await browser.newPage();
 
-    const page = await browser.newPage(); 
-    
-    await page.authenticate({username: "YGP3OY", password: "YCV4Cmz0ow"});
+  // await page.authenticate({ username: "675e6d292f", password: "9e667f5027" });
 
-    await page.goto('https://www.whatismyip.com');
-    // await page.waitForTimeout(10000);
-    // await browser.close();
-    break
-  }
-})()
+  await page.goto("https://www.whatismyip.com");
+  // await page.waitForTimeout(10000);
+  // await browser.close();
+})();

@@ -6,18 +6,10 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const Captcha = require('2captcha');
 const Solver = new Captcha.Solver("7a3e39ae301c8d02cb1bf1ca713e3eca");
-const RecaptchaPlugin = require('puppeteer-extra-plugin-recaptcha');
 
-puppeteer.use(
-  RecaptchaPlugin({
-    provider: {
-      id: '2captcha',
-      token: "7a3e39ae301c8d02cb1bf1ca713e3eca" // REPLACE THIS WITH YOUR OWN 2CAPTCHA API KEY ⚡
-    },
-    visualFeedback: true // colorize reCAPTCHAs (violet = detected, green = solved)
-  })
-);
+
 puppeteer.use(StealthPlugin());
+
 
 async function loginAccount(login, password, proxy) {
 
@@ -33,10 +25,10 @@ async function loginAccount(login, password, proxy) {
       "--enable-webgl",
       "--window-size=800,800",
       "--disable-web-security",
-      `--proxy-server=${proxyServer}`
+      `--proxy-server=${proxyServer}`,
+
     ],
   });
-
 
   const loginUrl =
     "https://accounts.google.com/AddSession?continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den-GB%26next%3D%252F&hl=en-GB&passive=false&service=youtube&uilel=0";
@@ -52,7 +44,7 @@ async function loginAccount(login, password, proxy) {
     
     await page.type('input[type="email"]', login);
     await page.keyboard.press("Enter");
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(2000);
 
     try {
       const captchaImgElement = await page
@@ -68,13 +60,26 @@ async function loginAccount(login, password, proxy) {
     await page.waitForTimeout(3000);
     
     try {
+      await page.waitForSelector(
+        '#view_container > div > div > div.pwWryf.bxPAYd > div > div.WEQkZc > div > form > span > section > div > div > div.SdBahf',
+        {timeout: 5000}
+      );
       const captchaContainer = await page.$('#view_container > div > div > div.pwWryf.bxPAYd > div > div.WEQkZc > div > form > span > section > div > div > div.SdBahf');
-      // const sitekey = await page.evaluate(el => el.getAttribute('data-site-key'), captchaContainer)
-      // console.log(sitekey);
-      // const res = await Solver.recaptcha(sitekey, page.url());
-      // await page.evaluate('var element=document.getElementById("g-recaptcha-response"); element.style.display="";');
-      // await page.type("#g-recaptcha-response", res.data)
-      await page.solveRecaptchas();
+      
+      const sitekey = await page.evaluate(el => el.getAttribute('data-site-key'), captchaContainer)
+      console.log(sitekey);
+      
+      const res = await Solver.recaptcha(sitekey, page.url());
+      await page.evaluate('var element=document.getElementById("g-recaptcha-response"); element.style.display="";');
+      
+      await page.evaluate((res) => {
+        const resp = document.getElementById("g-recaptcha-response");
+        resp.textContent = res.data
+      }, res);
+      await page.click('#recaptcha-anchor');
+      
+      await page.waitForTimeout(1200);
+
       await page.click('#view_container > div > div > div.pwWryf.bxPAYd > div > div.zQJV3 > div > div.qhFLie > div > div > button');
     } catch (err) {
       console.log("no REcaptcha(", err.message);
@@ -85,9 +90,8 @@ async function loginAccount(login, password, proxy) {
     await page.type('input[type="password"]', password);
     await page.keyboard.press("Enter");
 
-    await page.waitForNavigation({timeout: 30000});
+    await page.waitForSelector(`#avatar-btn`, {timeout: 10000})
     const userCookies = await page.cookies();
-    await page.waitForSelector('#avatar-btn');
     await page.click("#avatar-btn");
     await page.waitForSelector('#channel-container');
     let nickname = await page.$eval(
@@ -138,8 +142,9 @@ async function loginAccount(login, password, proxy) {
 module.exports = loginAccount;
 
 
-// const login = "robinnopelles@gmail.com"
-// const password = "DFY66y@ve4"
-// const proxy = "http://YGP3OY:YCV4Cmz0ow@45.11.21.6:1050"
-
-// loginAccount(login, password, proxy);
+// const accounts = require('./accounts.json');
+// const proxy = "http://675e6d292f:9e667f5027@95.31.211.120:30266";
+// (async () => {
+//   for (acc of accounts)
+//      await loginAccount(acc.split(':')[0], acc.split(':')[1], proxy)
+// })()
