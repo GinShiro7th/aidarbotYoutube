@@ -9,11 +9,6 @@ puppeteer.use(StealthPlugin());
 module.exports = async function(url){
   
   for (const acc of cookies){
-    
-    const proxyServer = acc.proxy.replace(/\/(.*?)@/g, "//");
-    const proxyUsername = acc.proxy.substring(acc.proxy.lastIndexOf('/')+1, acc.proxy.indexOf('@')).split(':')[0];
-    const proxyPassword = acc.proxy.substring(acc.proxy.lastIndexOf('/')+1, acc.proxy.indexOf('@')).split(':')[1];
-
     const browser = await puppeteer.launch({
       headless: false,
       args: [
@@ -21,15 +16,13 @@ module.exports = async function(url){
         "--disable-gpu",
         "--enable-webgl",
         "--window-size=800,800",
-        `--proxy-server=${proxyServer}`
       ],
     });
 
     const page = await browser.newPage();
-    await page.authenticate({username: proxyUsername, password: proxyPassword});
-    
+
     await page.setCookie(...acc.cookies);
-    console.log(acc.login, acc.password);
+    console.log(acc.email, acc.password);
     try {
       await page.goto(url, { waitUntil: 'load' });
     

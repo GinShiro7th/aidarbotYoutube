@@ -11,7 +11,7 @@ module.exports = async function (url, text, num) {
   let browser;
   try {
     const index = Number(num) - 1;
-    console.log(cookies[index].login, cookies[index].password);
+    console.log(cookies[index].email, cookies[index].password);
     
     const proxyServer = cookies[index].proxy.replace(/\/(.*?)@/g, "//");
     const proxyUsername = cookies[index].proxy.substring(cookies[index].proxy.lastIndexOf('/')+1, cookies[index].proxy.indexOf('@')).split(':')[0];

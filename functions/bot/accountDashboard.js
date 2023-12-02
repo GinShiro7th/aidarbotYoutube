@@ -6,10 +6,10 @@ module.exports = async function (msg, bot) {
     const account = accounts[i];
     if (account.name)
       if (i % 30 || i === 0) {
-        dashboard += i + 1 + ". " + account.name.split("\n")[0] + "\n";
+        dashboard += i + 1 + ". " + account.name + "\n";
       } else {
         mes.push(dashboard);
-        dashboard = i + 1 + ". " + account.name.split("\n")[0] + "\n";
+        dashboard = i + 1 + ". " + account.name + "\n";
       }
   }
   mes.push(dashboard);
