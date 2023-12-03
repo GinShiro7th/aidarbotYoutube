@@ -13,9 +13,9 @@ module.exports = async function (url, text, num) {
     const index = Number(num) - 1;
     console.log(cookies[index].email, cookies[index].password);
     
-    const proxyServer = cookies[index].proxy.replace(/\/(.*?)@/g, "//");
-    const proxyUsername = cookies[index].proxy.substring(cookies[index].proxy.lastIndexOf('/')+1, cookies[index].proxy.indexOf('@')).split(':')[0];
-    const proxyPassword = cookies[index].proxy.substring(cookies[index].proxy.lastIndexOf('/')+1, cookies[index].proxy.indexOf('@')).split(':')[1];
+    // const proxyServer = cookies[index].proxy.replace(/\/(.*?)@/g, "//");
+    // const proxyUsername = cookies[index].proxy.substring(cookies[index].proxy.lastIndexOf('/')+1, cookies[index].proxy.indexOf('@')).split(':')[0];
+    // const proxyPassword = cookies[index].proxy.substring(cookies[index].proxy.lastIndexOf('/')+1, cookies[index].proxy.indexOf('@')).split(':')[1];
   
     browser = await puppeteer.launch({
       headless: false,
@@ -25,22 +25,22 @@ module.exports = async function (url, text, num) {
         "--enable-webgl",
         "--window-size=1900,1200",
         "--disable-dev-shm-usage",
-        `--proxy-server=${proxyServer}`
+        // `--proxy-server=${proxyServer}`
       ],
     });
     
     const page = await browser.newPage();
-    await page.authenticate({username: proxyUsername, password: proxyPassword});
+    // await page.authenticate({username: proxyUsername, password: proxyPassword});
     
     await page.setCookie(...cookies[index].cookies);
 
     await page.goto(url, { timeout: 60000 });
 
-    await page.waitForSelector("#chatframe");
-    const frames = await page.frames();
-    const chatframe = frames.find((frame) => frame.name() === "chatframe");
+    // await page.waitForSelector("#chatframe");
+    // const frames = await page.frames();
+    // const chatframe = frames.find((frame) => frame.name() === "chatframe");
     try {
-      const comment = await chatframe.$(
+      const comment = await page.$(
         "#input.style-scope.yt-live-chat-message-input-renderer"
       );
 

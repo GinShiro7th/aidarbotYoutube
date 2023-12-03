@@ -23,31 +23,35 @@ module.exports = async function (video, text, msg, bot) {
       "Перехожу на секцию комментариев..."
     );
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        "--no-sandbox",
-        "--disable-gpu",
-        "--enable-webgl",
-        "--window-size=1900,1200",
-        "--disable-dev-shm-usage",
-        "--disable-web-security",
-      ],
-    });
+    let url = video.includes('live_chat') ? video : await (async () => {
+      console.log('дастаю ссылку');
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          "--no-sandbox",
+          "--disable-gpu",
+          "--enable-webgl",
+          "--window-size=1900,1200",
+          "--disable-dev-shm-usage",
+          "--disable-web-security",
+        ],
+      });
 
-    const page = await browser.newPage();
+      const page = await browser.newPage();
 
-    await page.goto(video, { timeout: 120000 });
-    await page.waitForSelector("#chatframe");
-    let url = await page.$eval("#chatframe", (element) =>
-      element.getAttribute("src")
-    );
+      await page.goto(video, { timeout: 120000 });
+      await page.waitForSelector("#chatframe");
+      let url = await page.$eval("#chatframe", (element) =>
+        element.getAttribute("src")
+      );
 
-    url = "https://www.youtube.com" + url;
-    
-    console.log(url);
+      url = "https://www.youtube.com" + url;
+      
+      console.log(url);
 
-    await browser.close();
+      await browser.close();
+      return url;
+    })();
 
     const browsersNum = cookies.length / 50;
     const workers = [];
