@@ -34,7 +34,7 @@ module.exports = async function (url, text, num) {
     
     await page.setCookie(...cookies[index].cookies);
 
-    await page.goto(url, { timeout: 60000 });
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
 
     // await page.waitForSelector("#chatframe");
     // const frames = await page.frames();

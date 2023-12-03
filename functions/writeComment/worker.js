@@ -36,7 +36,7 @@ const fs = require('fs');
           
       await page.setCookie(...cookie.cookies);
 
-      await page.goto(url, { timeout: 60000 });
+      await page.goto(url, { waitUntil: 'domcontentloaded' });
       
       try {
 
