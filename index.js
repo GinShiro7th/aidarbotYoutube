@@ -10,6 +10,6 @@ const bot = new TelegramBot(token, {
 global.commentsCount = 0;
 
 bot.on("message", async (msg) => {
-   console.log(msg.from.username, msg.text);
-   await checkCommand(msg, bot);
+  console.log(msg.from.username, msg.text);
+  await checkCommand(msg, bot);
 });

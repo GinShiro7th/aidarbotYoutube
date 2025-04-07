@@ -4,6 +4,7 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
 const botState = require('./botState.json');
+const { clear_temp_files } = require("../utils/functions");
 
 puppeteer.use(StealthPlugin());
 
@@ -13,12 +14,9 @@ module.exports = async function (url, text, num) {
     const index = Number(num) - 1;
     console.log(cookies[index].email, cookies[index].password);
     
-    // const proxyServer = cookies[index].proxy.replace(/\/(.*?)@/g, "//");
-    // const proxyUsername = cookies[index].proxy.substring(cookies[index].proxy.lastIndexOf('/')+1, cookies[index].proxy.indexOf('@')).split(':')[0];
-    // const proxyPassword = cookies[index].proxy.substring(cookies[index].proxy.lastIndexOf('/')+1, cookies[index].proxy.indexOf('@')).split(':')[1];
-  
     browser = await puppeteer.launch({
       headless: false,
+      userDataDir: './temp_profile',
       args: [
         "--no-sandbox",
         "--disable-gpu",
@@ -30,8 +28,7 @@ module.exports = async function (url, text, num) {
     });
     
     const page = await browser.newPage();
-    // await page.authenticate({username: proxyUsername, password: proxyPassword});
-    
+  
     await page.setCookie(...cookies[index].cookies);
 
     await page.goto(url, { waitUntil: 'domcontentloaded' });

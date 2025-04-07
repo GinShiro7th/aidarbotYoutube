@@ -10,23 +10,23 @@ const fs = require('fs');
   const cookies = workerData.cookies;
   const url = workerData.url;
   const text = workerData.text;
-
+ 
   // Создаем отдельный экземпляр браузера
   const browser = await puppeteer.launch({
     headless: false,
+    // userDataDir: './temp_profile',
     args: [
       "--no-sandbox",
       "--disable-gpu",
       "--enable-webgl",
       "--window-size=1900,1200",
       "--disable-dev-shm-usage",
+      // `--proxy-server=${proxyServer}`
     ],
   });
   try {
     for (const cookie of cookies) {
       const botState = JSON.parse(fs.readFileSync('./functions/botState.json', 'utf8'));
-
-      console.log(cookie.name.split('\n')[0], 'stoped ? -', botState.stoped);
 
       if (botState.stoped){ 
         break 
@@ -35,7 +35,7 @@ const fs = require('fs');
       const page = await browser.newPage();
           
       await page.setCookie(...cookie.cookies);
-
+      // await page.authenticate({username: proxyUsername, password: proxyPassword});
       await page.goto(url, { waitUntil: 'domcontentloaded' });
       
       try {
@@ -56,7 +56,7 @@ const fs = require('fs');
         }
       } catch (err) {
         console.log("error writing comment:", err.message);
-        parentPort.postMessage({status: "comment error", acc: { login: cookie.login, name: cookie.name}});
+        parentPort.postMessage({status: "comment error", acc: { email: cookie.email, name: cookie.name}});
       }
       await page.close();
     }

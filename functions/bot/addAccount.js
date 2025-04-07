@@ -36,7 +36,7 @@ module.exports = async function(msg, bot, option){
         const logPass = acc.split(' ')[0];
         const login = logPass.split(':')[0];
         const password = logPass.split(':')[1];
-        const proxy = acc.split(' ')[1].replace('\r', '');
+        const proxy = acc.split(' ')[1]?.replace('\r', '');
         
         console.log(proxy);
 

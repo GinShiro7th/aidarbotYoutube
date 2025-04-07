@@ -2,6 +2,7 @@ const cookies = require("../cookies.json");
 
 const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+const { clear_temp_files } = require("../utils/functions");
 
 puppeteer.use(StealthPlugin());
 
@@ -11,6 +12,7 @@ module.exports = async function(url){
   for (const acc of cookies){
     const browser = await puppeteer.launch({
       headless: false,
+      userDataDir: './temp_profile',
       args: [
         "--no-sandbox",
         "--disable-gpu",
@@ -33,6 +35,7 @@ module.exports = async function(url){
       console.log('no sub button(', err.message);
     }
     await page.close();
+    // clear_temp_files();
     await browser.close();
   }
 }

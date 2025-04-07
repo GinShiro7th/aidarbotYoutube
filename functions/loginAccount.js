@@ -3,27 +3,24 @@ const solveImageCaptcha = require("./solveImageCaptcha.js");
 const cookies = require("../cookies.json");
 
 const puppeteer = require("puppeteer-extra");
+// const puppeteer = require("puppeteer");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
-const recaptchaPlugin = require('puppeteer-extra-plugin-recaptcha');
 
+const { sleep, clear_temp_files } = require("../utils/functions.js");
 puppeteer.use(StealthPlugin());
 
 
-async function loginAccount(email, password, proxy) {
-
-  const proxyServer = proxy.replace(/\/(.*?)@/g, "//");
-  const proxyUsername = proxy.substring(proxy.lastIndexOf('/')+1, proxy.indexOf('@')).split(':')[0];
-  const proxyPassword = proxy.substring(proxy.lastIndexOf('/')+1, proxy.indexOf('@')).split(':')[1];
+async function loginAccount(email, password) {
 
   const browser = await puppeteer.launch({
     headless: false,
+    userDataDir: './temp_profile',
     args: [
       "--no-sandbox",
       "--disable-gpu",
       "--enable-webgl",
       "--window-size=800,800",
       "--disable-web-security",
-      `--proxy-server=${proxyServer}`
     ],
   });
 
@@ -34,14 +31,12 @@ async function loginAccount(email, password, proxy) {
     const page = await browser.newPage();
     const ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36 OPR/104.0.0.0";
     await page.setUserAgent(ua);
-
-    await page.authenticate({username: proxyUsername, password: proxyPassword});
     
     await page.goto(loginUrl, { waitUntil: "networkidle2" });
     
     await page.type('input[type="email"]', email);
     await page.keyboard.press("Enter");
-    await page.waitForTimeout(5000);
+    await sleep(5000);
 
     try {
       const captchaImgElement = await page
@@ -54,12 +49,14 @@ async function loginAccount(email, password, proxy) {
       console.log("no captcha(");
     }
 
-    await page.waitForTimeout(3000);
+    await sleep(3000);
 
     await page.type('input[type="password"]', password);
     await page.keyboard.press("Enter");
 
-    await page.waitForNavigation();
+    await page.waitForNavigation({'waitUntil': 'networkidle0'});
+    await page.goto("https://www.youtube.com", {waitUntil: "domcontentloaded"});
+
     const userCookies = await page.cookies();
     await page.waitForSelector('#avatar-btn');
     await page.click("#avatar-btn");
@@ -68,15 +65,12 @@ async function loginAccount(email, password, proxy) {
       "#channel-container",
       (elem) => elem.textContent
     );
-    
     console.log(nickname);
     const name = nickname.split("\n")[1].trim();
-
     console.log(name);
 
-    await page.waitForTimeout(1000);
-
     await browser.close();
+    clear_temp_files();
 
     if (userCookies[0].domain.includes("youtube")) {
       const index = cookies.findIndex(
@@ -87,11 +81,11 @@ async function loginAccount(email, password, proxy) {
           email,
           name,
           password,
-          proxy,
+          // proxy,
           cookies: userCookies,
         });
       } else {
-        cookies[index].proxy = proxy;
+        // cookies[index].proxy = proxy;
         cookies[index].name = name;
         cookies[index].cookies = userCookies;
       }
@@ -99,6 +93,7 @@ async function loginAccount(email, password, proxy) {
     fs.writeFile("./cookies.json", JSON.stringify(cookies, null, 2), (err) => {
       if (err) console.log(err);
     });
+
   } catch (err) {
     console.log("email err", err);
     await browser.close();
@@ -106,10 +101,3 @@ async function loginAccount(email, password, proxy) {
 };
 
 module.exports = loginAccount;
-
-
-const email = "robinnopelles@gmail.com"
-const password = "DFY66y@ve4"
-const proxy = "http://YGP3OY:YCV4Cmz0ow@45.11.21.6:1050"
-
-loginAccount(email, password, proxy);

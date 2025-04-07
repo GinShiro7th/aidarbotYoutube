@@ -1,5 +1,6 @@
 const Captcha = require('2captcha');
 const fs = require('fs');
+const { sleep } = require('../utils/functions');
 
 module.exports = async function solveImageCaptcha(page) {
   await (await page.$("#captchaimg")).screenshot({ path: "captcha.png" });
@@ -8,7 +9,7 @@ module.exports = async function solveImageCaptcha(page) {
   console.log(answer.data);
   await page.type('input[type="text"]', answer.data);
   await page.keyboard.press("Enter");
-  await page.waitForTimeout(2000);
+  await sleep(2000);
 
   try {
     const captchaImgElement = await page.$eval("#captchaimg", () => true).catch(() => false);

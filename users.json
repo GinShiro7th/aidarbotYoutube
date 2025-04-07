@@ -8,7 +8,9 @@
   {
     "id": 931318900,
     "username": "Aidarmannanov",
-    "command": "start",
-    "args": []
+    "command": "commentText",
+    "args": [
+      "https://www.youtube.com/live/_1RM28GoU3E?si=z819t5L4rLeCNotp"
+    ]
   }
 ]
